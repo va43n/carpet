@@ -47,7 +47,6 @@ class CameraThread(QThread):
             if self.is_calibrating:
                 continue
             self.frame = self.cam.capture_array()
-            self.frame = cv2.flip(self.frame, 0)
             self.frame = cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR)
 
             if not self.is_calibrated:
@@ -56,9 +55,10 @@ class CameraThread(QThread):
             if self.is_changing_ex:
                 continue
 
-            fg_mask = self.backSub.apply(self.frame, learningRate=0.05)
+            # flipped_frame = cv2.flip(self.frame, -1)
+            fg_mask = self.backSub.apply(self.frame)
 
-            retval, mask_thr = cv2.threshold(fg_mask, 180, 255,
+            retval, mask_thr = cv2.threshold(fg_mask, 220, 255,
                                              cv2.THRESH_BINARY)
 
             kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
@@ -70,7 +70,7 @@ class CameraThread(QThread):
                                                    cv2.RETR_EXTERNAL,
                                                    cv2.CHAIN_APPROX_SIMPLE)
 
-            min_contour_area = 200
+            min_contour_area = 100
             large_contours = [ct for ct in contours if
                               cv2.contourArea(ct) > min_contour_area]
 
