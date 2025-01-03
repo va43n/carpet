@@ -55,7 +55,6 @@ class CameraThread(QThread):
             if self.is_changing_ex:
                 continue
 
-            # flipped_frame = cv2.flip(self.frame, -1)
             fg_mask = self.backSub.apply(self.frame)
 
             retval, mask_thr = cv2.threshold(fg_mask, 220, 255,
