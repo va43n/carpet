@@ -158,7 +158,7 @@ class CameraThread(QThread):
                             self.is_changing_ex = True
                             print(f'Ex {self.curr_ex + 1} completed')
                             self.ex_completed()
-                            continue
+                            break
 
         # Остановка и закрытие камеры после завершения цикла
         self.cam.stop()
