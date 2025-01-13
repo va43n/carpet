@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.linalg import norm
 import cv2
 from picamera2 import Picamera2
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
@@ -224,6 +225,53 @@ class CameraThread(QThread):
         '''Функция, выполняющая саму калибровку, изменяющая координаты
         фигур, их размеры ии углы наклона на новые, соответствующие новому
         окну'''
+
+        # Правильное расположение точек калибровки:
+        # 1 2
+        # 4 3
+        # В общем случае точки могут быть введены в другом порядке, в таком
+        # случае нужно поменять порядок:
+        rect_copy = copy.deepcopy(self.rect_ct)
+
+        # Сначала отбираются точки с минимальной и максимальной нормой,
+        # соответственно, точки 1 и 3
+        ind_min = 0
+        ind_max = 0
+        biggest = norm(rect_copy[0])
+        lowest = norm(rect_copy[0])
+        for i in range(1, 3):
+            temp = norm(rect_copy[i])
+            if lowest > temp:
+                lowest = temp
+                ind_min = i
+            elif biggest < temp:
+                biggest = temp
+                ind_max = i
+
+        self.rect_ct[0] = rect_copy[ind_min]
+        self.rect_ct[2] = rect_copy[ind_max]
+
+        if ind_min < ind_max:
+            rect_copy.pop(ind_max)
+            rect_copy.pop(ind_min)
+        else:
+            rect_copy.pop(ind_min)
+            rect_copy.pop(ind_max)
+
+        # Далее, чтоб отличить 2-ю от 4-й точки можно сравнить их x-координаты:
+        # у 2-й точки x всегда больше, чем у 4-й точки
+        if rect_copy[0][0] < rect_copy[1][0]:
+            self.rect_ct[1] = rect_copy[1]
+            self.rect_ct[3] = rect_copy[0]
+        else:
+            self.rect_ct[1] = rect_copy[0]
+            self.rect_ct[3] = rect_copy[1]
+
+        del rect_copy
+
+        print(f'Calibration points: {self.rect_ct}')
+
+        # Далее производится калибровка
         self.is_calibrating = False
         self.is_calibrated = True
 
