@@ -85,6 +85,11 @@ class CameraThread(QThread):
         '''Функция, запускаемая в отдельном потоке. Обрабатывает каждый
         кадр с камеры'''
         while self._is_running:
+            # True -  если задача выполнена;
+            # False - если задача не выполнена.
+            # Позволяет понимать, когда нужно завершить выполнение всех циклов
+            is_completed = False
+
             # Если прямо сейчас происходит калибровка, значит нет
             # необходимости считывать новый кадр с камеры
             if self.is_calibrating:
@@ -158,7 +163,13 @@ class CameraThread(QThread):
                             self.is_changing_ex = True
                             print(f'Ex {self.curr_ex + 1} completed')
                             self.ex_completed()
+
+                            is_completed = True
                             break
+                    if is_completed:
+                        break
+                if is_completed:
+                    break
 
         # Остановка и закрытие камеры после завершения цикла
         self.cam.stop()
