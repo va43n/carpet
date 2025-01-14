@@ -186,7 +186,7 @@ class MainWindow(QMainWindow):
                 label_difficulty.setFont(font)
                 label_difficulty.setAlignment(Qt.AlignCenter)
 
-                is_completed = 'Да' if l[2] == 1 else 'Нет'
+                is_completed = 'Да' if l[2] == '1' else 'Нет'
                 label_is_complete = QLabel(f'Пройдено: {is_completed}', self)
                 label_is_complete.setFont(font)
                 label_is_complete.setAlignment(Qt.AlignCenter)
