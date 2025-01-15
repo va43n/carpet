@@ -186,7 +186,10 @@ class MainWindow(QMainWindow):
                 label_difficulty.setFont(font)
                 label_difficulty.setAlignment(Qt.AlignCenter)
 
-                is_completed = 'Да' if l[2] == '1' else 'Нет'
+                with open(f'db/{l[0]}/is_complete.txt') as compl_file:
+                    for compl_line in compl_file:
+                        is_completed = 'Да' if compl_line == '1' else 'Нет'
+
                 label_is_complete = QLabel(f'Пройдено: {is_completed}', self)
                 label_is_complete.setFont(font)
                 label_is_complete.setAlignment(Qt.AlignCenter)
@@ -223,7 +226,7 @@ class MainWindow(QMainWindow):
     def go_to_chosen_task(self, path: str, w: int, h: int):
         '''Функция, запускающая выбранное задание. Для этого запускается класс
         TaskWindow с параметром пути'''
-        new_window = TaskWindow(path, w, h)
+        new_window = TaskWindow(path, w, h, self)
         new_window.exec_()
 
     def go_to_menu(self):
@@ -259,3 +262,13 @@ class MainWindow(QMainWindow):
         self.options_button_back.setFont(font)
 
         super().resizeEvent(event)
+
+    def refresh_completion_info(self):
+        print('Refresh!')
+        self.grid_items = []
+        self.get_grid_items()
+        choose_v_cont = QWidget()
+        choose_v = QVBoxLayout(choose_v_cont)
+        for i, item in enumerate(self.grid_items):
+            choose_v.addWidget(item)
+        self.choose_scroll_area.setWidget(choose_v_cont)

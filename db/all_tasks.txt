@@ -1,2 +1,2 @@
-task1 3 0
-task2 1 1
+task1 3
+task2 1

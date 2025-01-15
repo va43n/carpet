@@ -22,9 +22,11 @@ class TaskWindow(QDialog):
     # потока и передающий координаты нажатой точки
     set_point_signal = pyqtSignal(np.ndarray)
 
-    def __init__(self, path: str, w: int, h: int):
+    def __init__(self, path: str, w: int, h: int, main_window):
         '''Инициализатор класса, запускает окно с интерфейсом.'''
         super().__init__()
+
+        self.main_window = main_window
 
         self.w = w
         self.h = h
@@ -134,11 +136,17 @@ class TaskWindow(QDialog):
         Если строка - changed, значит задача была выполнена и нужно
         показать на экране следующую задачу;
         Если строка - end, значит последняя задача была выполнена,
-        нужно закончить выполнение упражнения'''
+        нужно закончить выполнение упражнения, поставить 1 в файл is_complete
+        и вызвать функцию в главном окне, обновляющую информацию в меню
+        выбора'''
         if input == 'changed':
             self.curr_ex += 1
             self.show_ex(self.curr_ex)
         elif input == 'end':
+            with open(f'{self.path}/is_complete.txt', 'w') as compl_file:
+                compl_file.write('1')
+            self.main_window.refresh_completion_info()
+
             self.accept()
 
     def mousePressEvent(self, event):
