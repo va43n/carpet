@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (QApplication, QScrollArea, QWidget,
 from PyQt5.QtGui import QFont, QFontDatabase, QPixmap
 from PyQt5.QtCore import Qt
 from task_window import TaskWindow
+import json
 
 
 class MainWindow(QMainWindow):
@@ -170,25 +171,26 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.page_menu)
 
     def get_grid_items(self):
-        '''Функция, считывающая все задания из файла db/all_tasks.txt и
+        '''Функция, считывающая все задания из файла db/all_tasks.json и
         вставляющая их в список QScrollArea'''
         font = QFont(self.font_family, 50)
-        with open('db/all_tasks.txt') as f:
-            for line in f:
-                # Разбиение каждой строки файла на массив элементов
-                l = list(map(lambda item: item.replace('\n', ''), line.split(' ')))
 
+        with open('db/all_tasks.json', 'r') as f:
+            file_names = json.load(f)
+            for name in file_names['names']:
                 # Каждый элемент списка - виджет. Создание виджета
                 item = QWidget()
                 layout = QGridLayout(item)
 
-                label_difficulty = QLabel(f'Сложность: {l[1]}/5', self)
+                with open(f'db/{name}/task.json', 'r') as task_file:
+                    task_data = json.load(task_file)
+
+                    is_completed = 'Да' if task_data['is_complete'] else 'Нет'
+                    difficulty = task_data['difficulty']
+
+                label_difficulty = QLabel(f'Сложность: {difficulty}/5', self)
                 label_difficulty.setFont(font)
                 label_difficulty.setAlignment(Qt.AlignCenter)
-
-                with open(f'db/{l[0]}/is_complete.txt') as compl_file:
-                    for compl_line in compl_file:
-                        is_completed = 'Да' if compl_line == '1' else 'Нет'
 
                 label_is_complete = QLabel(f'Пройдено: {is_completed}', self)
                 label_is_complete.setFont(font)
@@ -201,12 +203,12 @@ class MainWindow(QMainWindow):
 
                 # Каждая кнопка в списке запускает свое задание,
                 # определеняемое путем
-                button.clicked.connect(lambda click, path=l[0]:
+                button.clicked.connect(lambda click, path=name:
                                        self.go_to_chosen_task(path, self.w,
                                                               self.h))
 
                 label_image = QLabel(self)
-                pixmap = QPixmap(f'db/{l[0]}/preview.png')
+                pixmap = QPixmap(f'db/{name}/preview.png')
                 label_image.setPixmap(pixmap)
                 label_image.setMaximumWidth(640)
                 label_image.setMaximumHeight(480)
@@ -222,6 +224,7 @@ class MainWindow(QMainWindow):
                 layout.setRowStretch(2, 1)
 
                 self.grid_items.append(item)
+
 
     def go_to_chosen_task(self, path: str, w: int, h: int):
         '''Функция, запускающая выбранное задание. Для этого запускается класс

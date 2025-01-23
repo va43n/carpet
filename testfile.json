@@ -1,0 +1,28 @@
+{
+    "is_complete": false,
+    "difficulty": 3,
+    "all_exes": [
+        {
+            "img": "img1.png",
+            "ex_figs": [
+                {
+                    "name": "o",
+                    "center": [392, 311],
+                    "radius": [128, 128],
+                    "angle": 0
+                }
+            ]
+        },
+        {
+            "img": "img2.png",
+            "ex_figs": [
+                {
+                    "name": "rect",
+                    "center": [1533, 875],
+                    "radius": [210, 83],
+                    "angle": 0
+                }
+            ]
+        }
+    ]
+}

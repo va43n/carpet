@@ -4,6 +4,7 @@ from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt, pyqtSignal
 from PIL import Image
 from camera_thread import CameraThread
+import json
 
 
 class TaskWindow(QDialog):
@@ -62,25 +63,16 @@ class TaskWindow(QDialog):
         # Массив всех задач задания
         self.all_exes = []
 
-        # Обработка файла, описывающего все задание: task.txt
-        with open(f'{self.path}/task.txt') as f:
-            ex = ''
-            for line in f:
-                # Каждая строка файла разбивается на отдельные части
-                line = line.replace('\n', '')
-                if line[-4:] == '.png':
-                    ex = line
-                    self.all_exes.append([ex, []])
-                elif line == 'end':
-                    ex = ''
-                else:
-                    parts = line.split(': ')
-                    values = parts[1].split('; ')
-                    point = list(map(int, values[0].split(', ')))
-                    radius = list(map(int, values[1].split(', ')))
-                    angle = int(values[2])
-                    self.all_exes[-1][1].append([parts[0], [point, radius,
-                                                            angle]])
+        # Обработка файла, описывающего все задание: task.json
+        with open(f'{self.path}/task.json') as f:
+            data = json.load(f)
+            for ex in data['all_exes']:
+                self.all_exes.append([ex['img'], []])
+                for fig in ex['ex_figs']:
+                    self.all_exes[-1][1].append([fig['name'],
+                                                 [fig['center'],
+                                                  fig['radius'],
+                                                  fig['angle']]])
 
         # Количество задач задания
         self.all_exes_count = len(self.all_exes)
@@ -143,8 +135,12 @@ class TaskWindow(QDialog):
             self.curr_ex += 1
             self.show_ex(self.curr_ex)
         elif input == 'end':
-            with open(f'{self.path}/is_complete.txt', 'w') as compl_file:
-                compl_file.write('1')
+            with open(f'{self.path}/task.json', 'r') as f:
+                data = json.load(f)
+            data['is_complete'] = True
+            with open(f'{self.path}/task.json', 'w') as f:
+                json.dump(data, f, indent=4)
+
             self.main_window.refresh_completion_info()
 
             self.accept()
