@@ -13,6 +13,6 @@ if __name__ == '__main__':
     window = MainWindow(screen_size.width(), screen_size.height())
 
     window.showFullScreen()
-    sys.exit(app.exec_())
 
     print('Приложение закрыто')
+    sys.exit(app.exec_())

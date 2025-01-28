@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         self.menu_button_exit = QPushButton('Выйти', self)
         self.menu_button_exit.setSizePolicy(QSizePolicy.Expanding,
                                             QSizePolicy.Expanding)
-        self.menu_button_exit.clicked.connect(QApplication.quit)
+        self.menu_button_exit.clicked.connect(self.close)
 
         menu_layout = QGridLayout()
         menu_layout.setRowStretch(0, 100)
@@ -225,7 +225,6 @@ class MainWindow(QMainWindow):
 
                 self.grid_items.append(item)
 
-
     def go_to_chosen_task(self, path: str, w: int, h: int):
         '''Функция, запускающая выбранное задание. Для этого запускается класс
         TaskWindow с параметром пути'''
@@ -243,6 +242,16 @@ class MainWindow(QMainWindow):
     def go_to_options(self):
         '''Функция для перехода на страницу настроек'''
         self.stacked_widget.setCurrentWidget(self.page_options)
+
+    def refresh_completion_info(self):
+        print('Refresh!')
+        self.grid_items = []
+        self.get_grid_items()
+        choose_v_cont = QWidget()
+        choose_v = QVBoxLayout(choose_v_cont)
+        for i, item in enumerate(self.grid_items):
+            choose_v.addWidget(item)
+        self.choose_scroll_area.setWidget(choose_v_cont)
 
     def resizeEvent(self, event):
         '''Функция, вызываемая при изменении интерфейса приложения,
@@ -266,12 +275,7 @@ class MainWindow(QMainWindow):
 
         super().resizeEvent(event)
 
-    def refresh_completion_info(self):
-        print('Refresh!')
-        self.grid_items = []
-        self.get_grid_items()
-        choose_v_cont = QWidget()
-        choose_v = QVBoxLayout(choose_v_cont)
-        for i, item in enumerate(self.grid_items):
-            choose_v.addWidget(item)
-        self.choose_scroll_area.setWidget(choose_v_cont)
+    def closeEvent(self, event):
+        '''Функция, вызываемая при закрытии основного окна'''
+        with open('calibration_info.json', 'w'):
+            pass

@@ -5,6 +5,8 @@ from picamera2 import Picamera2
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from math import atan, pi, radians, sin, cos
 import copy
+import json
+import os
 
 
 class CameraThread(QThread):
@@ -40,6 +42,9 @@ class CameraThread(QThread):
         self.cam.configure(self.cam.create_preview_configuration(
             main={'size': (self.w, self.h)}))
         self.cam.start()
+
+        # Каждый кадр с камеры будет записываться в переменную self.frame
+        self.frame = -1
 
         # True - если камера прямо сейчас калибруется, иначе - False
         self.is_calibrating = False
@@ -81,6 +86,8 @@ class CameraThread(QThread):
 
         # True - если поток активен, иначе False
         self._is_running = True
+
+        self.check_calibration_info_file()
 
     def run(self):
         '''Функция, запускаемая в отдельном потоке. Обрабатывает каждый
@@ -147,7 +154,7 @@ class CameraThread(QThread):
                 x, y, w, h = cv2.boundingRect(ct)
                 points = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]
                 for pt in points:
-                    for key in self.figures.keys():
+                    for key in self.new_figures.keys():
                         fig = self.new_figures[key]
                         cx, cy = fig[0]
                         a, b = fig[1]
@@ -182,6 +189,20 @@ class CameraThread(QThread):
         self.cam.close()
         self._is_running = False
 
+    def check_calibration_info_file(self):
+        if os.path.getsize('calibration_info.json') == 0:
+            return
+
+        with open('calibration_info.json', 'r') as file:
+            data = json.load(file)
+            self.rect_ct[0] = np.array(data['1'])
+            self.rect_ct[1] = np.array(data['2'])
+            self.rect_ct[2] = np.array(data['3'])
+            self.rect_ct[3] = np.array(data['4'])
+            print(f'{self.rect_ct=}')
+
+            self.do_calibration()
+
     def set_figures(self):
         '''Функция, устанавливающая фигуры'''
         self.figures = {}
@@ -189,11 +210,14 @@ class CameraThread(QThread):
             self.send_ex_complited_announce.emit('end')
         for key in self.all_exes[self.curr_ex][1]:
             self.figures[key[0]] = key[1]
-        print(self.figures)
+        print(f'{self.figures=}')
 
     @pyqtSlot(int)
     def start_calibration(self, input):
         '''Функция, начинающая калибровку.'''
+        if isinstance(self.frame, int):
+            return
+
         if input == 0:
             self.is_calibrating = True
             self.curr_point = 0
@@ -219,12 +243,12 @@ class CameraThread(QThread):
         # Если пользователь ввел 4 точки, необходимо выполнить саму
         # камеры
         if self.curr_point == 4:
+            self.sort_calibration_points()
             self.do_calibration()
 
-    def do_calibration(self):
-        '''Функция, выполняющая саму калибровку, изменяющая координаты
-        фигур, их размеры ии углы наклона на новые, соответствующие новому
-        окну'''
+    def sort_calibration_points(self):
+        '''Функция, сортирующая массив точек калибровки для последующей
+        калибровки'''
 
         # Правильное расположение точек калибровки:
         # 1 2
@@ -269,10 +293,23 @@ class CameraThread(QThread):
 
         del rect_copy
 
-        print(f'Calibration points: {self.rect_ct}')
+        data = {
+            '1': self.rect_ct[0].tolist(),
+            '2': self.rect_ct[1].tolist(),
+            '3': self.rect_ct[2].tolist(),
+            '4': self.rect_ct[3].tolist()
+        }
 
-        # Далее производится калибровка
-        self.is_calibrating = False
+        with open('calibration_info.json', 'w') as file:
+            json.dump(data, file, indent=4)
+
+        print(f'{data=}')
+
+    def do_calibration(self):
+        '''Функция, выполняющая саму калибровку, изменяющая координаты
+        фигур, их размеры ии углы наклона на новые, соответствующие новому
+        окну'''
+
         self.is_calibrated = True
 
         self.new_figures = copy.deepcopy(self.figures)
@@ -294,6 +331,8 @@ class CameraThread(QThread):
 
             n_fig[0][0] = round(n_fig[0][0])
             n_fig[0][1] = round(n_fig[0][1])
+
+        self.is_calibrating = False
 
     def ex_completed(self):
         '''Функция, вызывающаяся, когда задача выполнена, и посылающая с
