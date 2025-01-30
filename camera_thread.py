@@ -40,7 +40,7 @@ class CameraThread(QThread):
         # Запуск камеры
         self.cam = Picamera2()
         self.cam.configure(self.cam.create_preview_configuration(
-            main={'size': (self.w, self.h)}))
+            {'size': (self.w, self.h), 'format': 'RGB888'}))
         self.cam.start()
 
         # Каждый кадр с камеры будет записываться в переменную self.frame
@@ -82,7 +82,7 @@ class CameraThread(QThread):
         self.set_figures()
 
         # Определение переменной для нахождения маски переднего плана
-        self.backSub = cv2.createBackgroundSubtractorMOG2()
+        self.backSub = cv2.bgsegm.createBackgroundSubtractorMOG()
 
         # True - если поток активен, иначе False
         self._is_running = True
@@ -105,7 +105,7 @@ class CameraThread(QThread):
 
             # Считывание кадра с камеры
             self.frame = self.cam.capture_array()
-            self.frame = cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR)
+            # self.frame = cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR)
 
             # Если камера еще не калибровалась, нет необходимости
             # искать движущиеся объекты в кадре
@@ -121,8 +121,8 @@ class CameraThread(QThread):
             # Получение маски переднего плана
             fg_mask = self.backSub.apply(self.frame)
 
-            # Отсечение на маске пикселей, насыщенность которых меньше 220
-            retval, mask_thr = cv2.threshold(fg_mask, 220, 255,
+            # Отсечение на маске пикселей, насыщенность которых меньше 170
+            retval, mask_thr = cv2.threshold(fg_mask, 170, 255,
                                              cv2.THRESH_BINARY)
 
             # Фильтрация очень маленьких объектов
@@ -137,7 +137,7 @@ class CameraThread(QThread):
                                                    cv2.CHAIN_APPROX_SIMPLE)
 
             # Фильтрация контуров, количество пикселей в которых меньше 100
-            min_contour_area = 100
+            min_contour_area = 200
             large_contours = [ct for ct in contours if
                               cv2.contourArea(ct) > min_contour_area]
 
@@ -170,6 +170,8 @@ class CameraThread(QThread):
                         if eq <= 1:
                             self.is_changing_ex = True
                             print(f'Ex {self.curr_ex + 1} completed')
+                            print(f'stand on figures[{key}] ({cx}, {cy}; '
+                                  f'{a}, {b}; {theta}) by {pt=} in {points=}')
                             self.ex_completed()
 
                             is_completed = True

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import (QApplication, QScrollArea, QWidget,
+from PyQt5.QtWidgets import (QScrollArea, QWidget,
                              QMainWindow, QStackedWidget,
                              QVBoxLayout, QPushButton, QLabel,
                              QSizePolicy, QGridLayout)
@@ -228,7 +228,7 @@ class MainWindow(QMainWindow):
     def go_to_chosen_task(self, path: str, w: int, h: int):
         '''Функция, запускающая выбранное задание. Для этого запускается класс
         TaskWindow с параметром пути'''
-        new_window = TaskWindow(path, w, h, self)
+        new_window = TaskWindow(path, w, h, self.font_family, self)
         new_window.exec_()
 
     def go_to_menu(self):

@@ -1,6 +1,6 @@
 import numpy as np
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel
-from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtGui import QFont, QPixmap, QImage
 from PyQt5.QtCore import Qt, pyqtSignal
 from PIL import Image
 from camera_thread import CameraThread
@@ -23,10 +23,11 @@ class TaskWindow(QDialog):
     # потока и передающий координаты нажатой точки
     set_point_signal = pyqtSignal(np.ndarray)
 
-    def __init__(self, path: str, w: int, h: int, main_window):
+    def __init__(self, path: str, w: int, h: int, font_family, main_window):
         '''Инициализатор класса, запускает окно с интерфейсом.'''
         super().__init__()
 
+        self.font_family = font_family
         self.main_window = main_window
 
         self.w = w
@@ -36,19 +37,7 @@ class TaskWindow(QDialog):
         self.path = f'db/{path}'
 
         # ====================================================================
-        # Задание параметров окна
-        self.setWindowTitle(f'Задание {path}')
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setWindowState(Qt.WindowFullScreen)
-
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        self.img = QLabel(self)
-        self.img.setScaledContents(True)
-
-        layout.addWidget(self.img)
-        self.setLayout(layout)
+        # Задание параметров окна и определение виджетов
 
         self.setStyleSheet("""
             QWidget {
@@ -57,7 +46,32 @@ class TaskWindow(QDialog):
             QLabel {
                 color: #FFFFFF;
             }
-            """)
+        """)
+
+        self.setWindowTitle(f'Задание {path}')
+        self.setWindowModality(Qt.ApplicationModal)
+        self.setWindowState(Qt.WindowFullScreen)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        self.calibration_label = QLabel('Нажмите ЛКМ, чтобы откалибровать '
+                                        'камеру. Нажмите ПКМ, чтобы прервать '
+                                        'выполнение задания.', self)
+
+        font = QFont(self.font_family, 30)
+        self.calibration_label.setFont(font)
+        self.calibration_label.setWordWrap(True)
+        self.calibration_label.setAlignment(Qt.AlignCenter | Qt.AlignCenter)
+
+        layout.addWidget(self.calibration_label, 1)
+
+        self.img = QLabel(self)
+        self.img.setScaledContents(True)
+
+        layout.addWidget(self.img, 7)
+        self.setLayout(layout)
+
         # ====================================================================
 
         # Массив всех задач задания
@@ -152,12 +166,21 @@ class TaskWindow(QDialog):
         задания.'''
         if event.button() == Qt.LeftButton:
             if self.calibrate_state == 0:
+                self.calibration_label.setText('Для калибровки нажмите левой '
+                                               'кнопкой мыши на каждую '
+                                               'вершину зеленой рамки.')
+
                 self.calibration_start_signal.emit(self.calibrate_state)
             else:
                 point = np.array([event.x(), event.y()])
                 self.set_point_signal.emit(point)
+
             self.calibrate_state = (self.calibrate_state + 1) % 5
             if self.calibrate_state == 0:
+                self.calibration_label.setText('Калибровка завершена, можно '
+                                               'начать выполнять задание! '
+                                               'Нажмите ПКМ, чтобы прервать '
+                                               'выполнение задания.')
                 self.show_ex(self.curr_ex)
 
         elif event.button() == Qt.RightButton:
