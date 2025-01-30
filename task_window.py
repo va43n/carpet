@@ -55,8 +55,9 @@ class TaskWindow(QDialog):
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
 
-        self.calibration_label = QLabel('Нажмите ЛКМ, чтобы откалибровать '
-                                        'камеру. Нажмите ПКМ, чтобы прервать '
+        self.calibration_label = QLabel('Нажмите левую кнопку мыши, чтобы '
+                                        'откалибровать камеру. Нажмите правую '
+                                        'кнопку мыши, чтобы прервать '
                                         'выполнение задания.', self)
 
         font = QFont(self.font_family, 30)
