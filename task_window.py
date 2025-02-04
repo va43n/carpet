@@ -27,6 +27,9 @@ class TaskWindow(QDialog):
         '''Инициализатор класса, запускает окно с интерфейсом.'''
         super().__init__()
 
+        # Скрываем курсор
+        self.setCursor(Qt.BlankCursor)
+
         self.font_family = font_family
         self.main_window = main_window
 
@@ -60,7 +63,7 @@ class TaskWindow(QDialog):
                                         'кнопку мыши, чтобы прервать '
                                         'выполнение задания.', self)
 
-        font = QFont(self.font_family, 30)
+        font = QFont(self.font_family, 25)
         self.calibration_label.setFont(font)
         self.calibration_label.setWordWrap(True)
         self.calibration_label.setAlignment(Qt.AlignCenter | Qt.AlignCenter)
@@ -70,7 +73,7 @@ class TaskWindow(QDialog):
         self.img = QLabel(self)
         self.img.setScaledContents(True)
 
-        layout.addWidget(self.img, 7)
+        layout.addWidget(self.img, 9)
         self.setLayout(layout)
 
         # ====================================================================
@@ -167,17 +170,27 @@ class TaskWindow(QDialog):
         задания.'''
         if event.button() == Qt.LeftButton:
             if self.calibrate_state == 0:
+                # Включаем курсор
+                self.unsetCursor()
+
                 self.calibration_label.setText('Для калибровки нажмите левой '
                                                'кнопкой мыши на каждую '
                                                'вершину зеленой рамки.')
 
                 self.calibration_start_signal.emit(self.calibrate_state)
             else:
-                point = np.array([event.x(), event.y()])
+                x = event.x()
+                y = int(event.y() * 10 / 9 - self.h * 1 / 10)
+                y = 0 if y <= 0 else y
+                point = np.array([x, y])
+
                 self.set_point_signal.emit(point)
 
             self.calibrate_state = (self.calibrate_state + 1) % 5
             if self.calibrate_state == 0:
+                # Скрываем курсор
+                self.setCursor(Qt.BlankCursor)
+
                 self.calibration_label.setText('Калибровка завершена, можно '
                                                'начать выполнять задание! '
                                                'Нажмите ПКМ, чтобы прервать '

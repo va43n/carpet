@@ -53,13 +53,14 @@ class CameraThread(QThread):
         self.is_calibrated = False
 
         # Количество кадров, которые не обрабатываются сразу после калибровки
+        # или после выполнения задачи
         self.skip_frames_number = 5
 
         # Текущее количество пропускаемых кадров:
         # Изначально -1 - кадры пока не пропускаются - камера еще не
-        # откалибрована;
-        # После калибровки значение находится в пределе от 0 до
-        # self.skip_frames_number.
+        # откалибрована либо задача еще не выполнена;
+        # После калибровки или после выполнения задачи значение находится
+        # в пределе от 0 до self.skip_frames_number.
         self.curr_skip = -1
 
         # True - если только что была выполнена одна из задач, иначе - False
@@ -141,7 +142,8 @@ class CameraThread(QThread):
             large_contours = [ct for ct in contours if
                               cv2.contourArea(ct) > min_contour_area]
 
-            # Если необходимо пропустить несколько кадров после калибровки:
+            # Если необходимо пропустить несколько кадров после калибровки
+            # или после выполнения задания:
             if self.curr_skip >= 0 and self.curr_skip <= self.skip_frames_number:
                 self.curr_skip += 1
                 continue
@@ -336,6 +338,8 @@ class CameraThread(QThread):
 
         self.is_calibrating = False
 
+        self.curr_skip = 0
+
     def ex_completed(self):
         '''Функция, вызывающаяся, когда задача выполнена, и посылающая с
         помощью сигнала send_ex_complited_announce одну из двух строк в
@@ -344,7 +348,6 @@ class CameraThread(QThread):
         показать на экране следующую задачу;
         Если строка - end, значит последняя задача была выполнена,
         нужно закончить выполнение упражнения.'''
-        self.curr_skip = 0
 
         self.curr_ex += 1
         if self.curr_ex >= self.all_exes_count:
@@ -356,3 +359,5 @@ class CameraThread(QThread):
             self.do_calibration()
             self.send_ex_complited_announce.emit('changed')
             self.is_changing_ex = False
+
+        self.curr_skip = 0
