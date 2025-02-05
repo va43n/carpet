@@ -43,6 +43,10 @@ class CameraThread(QThread):
             {'size': (self.w, self.h), 'format': 'RGB888'}))
         self.cam.start()
 
+        # Получение первого кадра
+        self.prev_frame = self.cam.capture_array()
+        self.prev_frame = cv2.cvtColor(self.prev_frame, cv2.COLOR_BGR2GRAY)
+
         # Каждый кадр с камеры будет записываться в переменную self.frame
         self.frame = -1
 
@@ -83,7 +87,7 @@ class CameraThread(QThread):
         self.set_figures()
 
         # Определение переменной для нахождения маски переднего плана
-        self.backSub = cv2.bgsegm.createBackgroundSubtractorMOG()
+        # self.backSub = cv2.bgsegm.createBackgroundSubtractorMOG()
 
         # True - если поток активен, иначе False
         self._is_running = True
@@ -106,31 +110,39 @@ class CameraThread(QThread):
 
             # Считывание кадра с камеры
             self.frame = self.cam.capture_array()
-            # self.frame = cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR)
+            frame_gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
 
             # Если камера еще не калибровалась, нет необходимости
             # искать движущиеся объекты в кадре
             if not self.is_calibrated:
+                self.prev_frame = copy.deepcopy(frame_gray)
                 continue
 
             # Если только что была выполнена задача и прямо сейчас
             # устанавливается новая задача, нет необходимости
             # искать движущиеся объекты
             if self.is_changing_ex:
+                self.prev_frame = copy.deepcopy(frame_gray)
                 continue
 
-            # Получение маски переднего плана
-            fg_mask = self.backSub.apply(self.frame)
+            # Получение маски
+            diff = cv2.absdiff(frame_gray, self.prev_frame)
+            blur = cv2.GaussianBlur(diff, (5, 5), 0)
+            _, mask = cv2.threshold(blur, 30, 255, cv2.THRESH_BINARY)
+            self.prev_frame = copy.deepcopy(frame_gray)
 
-            # Отсечение на маске пикселей, насыщенность которых меньше 170
-            retval, mask_thr = cv2.threshold(fg_mask, 170, 255,
-                                             cv2.THRESH_BINARY)
+            # # Получение маски переднего плана
+            # fg_mask = self.backSub.apply(self.frame)
 
-            # Фильтрация очень маленьких объектов
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-            mask_eroded = cv2.morphologyEx(mask_thr, cv2.MORPH_OPEN, kernel)
+            # # Отсечение на маске пикселей, насыщенность которых меньше 170
+            # retval, mask_thr = cv2.threshold(fg_mask, 170, 255,
+            #                                  cv2.THRESH_BINARY)
 
-            mask_for_ct = mask_eroded
+            # # Фильтрация очень маленьких объектов
+            # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+            # mask_eroded = cv2.morphologyEx(mask_thr, cv2.MORPH_OPEN, kernel)
+
+            mask_for_ct = mask
 
             # Нахождение контуров
             contours, hierarchy = cv2.findContours(mask_for_ct,
@@ -138,7 +150,7 @@ class CameraThread(QThread):
                                                    cv2.CHAIN_APPROX_SIMPLE)
 
             # Фильтрация контуров, количество пикселей в которых меньше 100
-            min_contour_area = 200
+            min_contour_area = 100
             large_contours = [ct for ct in contours if
                               cv2.contourArea(ct) > min_contour_area]
 
