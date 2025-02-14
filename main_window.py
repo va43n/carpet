@@ -184,6 +184,7 @@ class MainWindow(QMainWindow):
 
                 with open(f'db/{name}/task.json', 'r') as task_file:
                     task_data = json.load(task_file)
+                    print(f'read file {name}')
 
                     is_completed = 'Да' if task_data['is_complete'] else 'Нет'
                     difficulty = task_data['difficulty']

@@ -1,19 +1,19 @@
 {
     "is_complete": true,
-    "difficulty": 2,
+    "difficulty": 3,
     "all_exes": [
         {
             "img": "img1.png",
             "ex_figs": [
                 {
-                    "name": "square",
+                    "name": "5",
                     "center": [
-                        1559,
-                        246
+                        960,
+                        167
                     ],
                     "radius": [
-                        107,
-                        107
+                        95,
+                        90
                     ],
                     "angle": 0
                 }
@@ -23,14 +23,26 @@
             "img": "img2.png",
             "ex_figs": [
                 {
-                    "name": "elli",
+                    "name": "sq1",
                     "center": [
-                        960,
-                        321
+                        258,
+                        540
                     ],
                     "radius": [
-                        138,
-                        84
+                        90,
+                        90
+                    ],
+                    "angle": 0
+                },
+                {
+                    "name": "sq2",
+                    "center": [
+                        1647,
+                        540
+                    ],
+                    "radius": [
+                        90,
+                        90
                     ],
                     "angle": 0
                 }
@@ -40,31 +52,14 @@
             "img": "img3.png",
             "ex_figs": [
                 {
-                    "name": "6",
-                    "center": [
-                        960,
-                        738
-                    ],
-                    "radius": [
-                        116,
-                        116
-                    ],
-                    "angle": 0
-                }
-            ]
-        },
-        {
-            "img": "img4.png",
-            "ex_figs": [
-                {
                     "name": "tria",
                     "center": [
-                        374,
-                        833
+                        962,
+                        927
                     ],
                     "radius": [
-                        122,
-                        105
+                        105,
+                        89
                     ],
                     "angle": 0
                 }
