@@ -1,5 +1,5 @@
 import numpy as np
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt5.QtGui import QFont, QPixmap, QImage
 from PyQt5.QtCore import Qt, pyqtSignal
 from PIL import Image
@@ -55,26 +55,42 @@ class TaskWindow(QDialog):
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowState(Qt.WindowFullScreen)
 
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
+        v_layout = QVBoxLayout()
+        v_layout.setContentsMargins(0, 0, 0, 0)
+
+        h_layout = QHBoxLayout()
+        h_layout.setContentsMargins(0, 0, 0, 0)
+
+        font = QFont(self.font_family, 25)
 
         self.calibration_label = QLabel('Нажмите левую кнопку мыши, чтобы '
                                         'откалибровать камеру. Нажмите правую '
                                         'кнопку мыши, чтобы прервать '
                                         'выполнение задания.', self)
 
-        font = QFont(self.font_family, 25)
         self.calibration_label.setFont(font)
         self.calibration_label.setWordWrap(True)
         self.calibration_label.setAlignment(Qt.AlignCenter | Qt.AlignCenter)
 
-        layout.addWidget(self.calibration_label, 1)
+        v_layout.addWidget(self.calibration_label, 1)
+
+        self.description_label = QLabel('...', self)
+
+        self.description_label.setFont(font)
+        self.description_label.setWordWrap(True)
+        self.description_label.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+
+        h_layout.addWidget(self.description_label, 1)
+        self.description_label.setFixedWidth(384)
 
         self.img = QLabel(self)
         self.img.setScaledContents(True)
 
-        layout.addWidget(self.img, 9)
-        self.setLayout(layout)
+        h_layout.addWidget(self.img, 4)
+
+        v_layout.addLayout(h_layout, 9)
+
+        self.setLayout(v_layout)
 
         # ====================================================================
 
@@ -84,6 +100,8 @@ class TaskWindow(QDialog):
         # Обработка файла, описывающего все задание: task.json
         with open(f'{self.path}/task.json') as f:
             data = json.load(f)
+            description = data['description']
+            self.description_label.setText(f'Описание: {description}')
             for ex in data['all_exes']:
                 self.all_exes.append([ex['img'], []])
                 for fig in ex['ex_figs']:
@@ -179,10 +197,13 @@ class TaskWindow(QDialog):
 
                 self.calibration_start_signal.emit(self.calibrate_state)
             else:
-                x = event.x()
+                x = int(event.x() * 5 / 4 - self.w * 1 / 5) - 94
+                x = 0 if x <= 0 else x
                 y = int(event.y() * 10 / 9 - self.h * 1 / 10)
                 y = 0 if y <= 0 else y
                 point = np.array([x, y])
+
+                print(f'{point=}')
 
                 self.set_point_signal.emit(point)
 

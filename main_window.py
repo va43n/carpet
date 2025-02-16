@@ -184,12 +184,12 @@ class MainWindow(QMainWindow):
 
                 with open(f'db/{name}/task.json', 'r') as task_file:
                     task_data = json.load(task_file)
-                    print(f'read file {name}')
+                    # print(f'read file {name}')
 
                     is_completed = 'Да' if task_data['is_complete'] else 'Нет'
                     difficulty = task_data['difficulty']
 
-                label_difficulty = QLabel(f'Сложность: {difficulty}/5', self)
+                label_difficulty = QLabel(f'Сложность: {difficulty}/10', self)
                 label_difficulty.setFont(font)
                 label_difficulty.setAlignment(Qt.AlignCenter)
 
