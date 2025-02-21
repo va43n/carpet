@@ -174,8 +174,8 @@ class CameraThread(QThread):
                         a, b = fig[1]
                         theta = radians(fig[2])
 
-                        dx = pt[0] - cx
-                        dy = pt[1] - cy
+                        dx = self.w - pt[0] - cx
+                        dy = self.h - pt[1] - cy
 
                         rot_x = dx * cos(theta) + dy * sin(theta)
                         rot_y = dx * (-sin(theta)) + dy * cos(theta)

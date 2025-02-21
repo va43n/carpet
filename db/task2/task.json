@@ -11,14 +11,14 @@
             "img": "img1.png",
             "ex_figs": [
                 {
-                    "name": "square",
+                    "name": "tria",
                     "center": [
-                        1559,
-                        246
+                        374,
+                        833
                     ],
                     "radius": [
-                        107,
-                        107
+                        122,
+                        105
                     ],
                     "angle": 0
                 }
@@ -26,23 +26,6 @@
         },
         {
             "img": "img2.png",
-            "ex_figs": [
-                {
-                    "name": "elli",
-                    "center": [
-                        960,
-                        321
-                    ],
-                    "radius": [
-                        138,
-                        84
-                    ],
-                    "angle": 0
-                }
-            ]
-        },
-        {
-            "img": "img3.png",
             "ex_figs": [
                 {
                     "name": "6",
@@ -59,17 +42,34 @@
             ]
         },
         {
+            "img": "img3.png",
+            "ex_figs": [
+                {
+                    "name": "elli",
+                    "center": [
+                        960,
+                        321
+                    ],
+                    "radius": [
+                        138,
+                        84
+                    ],
+                    "angle": 0
+                }
+            ]
+        },
+        {
             "img": "img4.png",
             "ex_figs": [
                 {
-                    "name": "tria",
+                    "name": "square",
                     "center": [
-                        374,
-                        833
+                        1559,
+                        246
                     ],
                     "radius": [
-                        122,
-                        105
+                        107,
+                        107
                     ],
                     "angle": 0
                 }

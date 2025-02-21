@@ -11,14 +11,14 @@
             "img": "img1.png",
             "ex_figs": [
                 {
-                    "name": "5",
+                    "name": "tria",
                     "center": [
-                        960,
-                        167
+                        962,
+                        927
                     ],
                     "radius": [
-                        95,
-                        90
+                        105,
+                        89
                     ],
                     "angle": 0
                 }
@@ -57,14 +57,14 @@
             "img": "img3.png",
             "ex_figs": [
                 {
-                    "name": "tria",
+                    "name": "5",
                     "center": [
-                        962,
-                        927
+                        960,
+                        167
                     ],
                     "radius": [
-                        105,
-                        89
+                        95,
+                        90
                     ],
                     "angle": 0
                 }
