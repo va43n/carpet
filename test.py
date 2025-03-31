@@ -1,5 +1,6 @@
 import cv2
 from picamera2 import Picamera2
+import copy
 
 if __name__ == '__main__':
     print('start')
@@ -23,7 +24,7 @@ if __name__ == '__main__':
         diff = cv2.absdiff(frame_gray, prev_frame)
         blur = cv2.GaussianBlur(diff, (5, 5), 0)
         _, mask = cv2.threshold(blur, 30, 255, cv2.THRESH_BINARY)
-        prev_frame = frame_gray
+        prev_frame = copy.deepcopy(frame_gray)
 
         # cv2.imshow("test", mask)
 
