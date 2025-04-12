@@ -1,6 +1,7 @@
 import cv2
 from picamera2 import Picamera2
 import copy
+import json
 
 if __name__ == '__main__':
     print('start')
@@ -10,7 +11,25 @@ if __name__ == '__main__':
                                                     'format': 'RGB888'}))
     cam.start()
 
-    backSub = cv2.bgsegm.createBackgroundSubtractorMOG()
+    all_exes = []
+
+    with open('/home/login/Desktop/prog/db/task1/task.json') as f:
+        data = json.load(f)
+        description = data['description']
+        for ex in data['all_exes']:
+            all_exes.append([ex['img'], []])
+            for fig in ex['ex_figs']:
+                all_exes[-1][1].append([fig['name'],
+                                        [fig['center'],
+                                         fig['radius'],
+                                         fig['angle']]])
+
+    figures = {}
+    new_figures = {}
+    all_exes_count = len(all_exes)
+
+    for key in all_exes[0][1]:
+        figures[key[0]] = key[1]
 
     prev_frame = cam.capture_array()
     prev_frame = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
@@ -19,20 +38,10 @@ if __name__ == '__main__':
         frame = cam.capture_array()
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        # mask = backSub.apply(frame)
-
         diff = cv2.absdiff(frame_gray, prev_frame)
         blur = cv2.GaussianBlur(diff, (5, 5), 0)
         _, mask = cv2.threshold(blur, 30, 255, cv2.THRESH_BINARY)
         prev_frame = copy.deepcopy(frame_gray)
-
-        # cv2.imshow("test", mask)
-
-        # retval, mask_thr = cv2.threshold(mask, 170, 255,
-        #                                  cv2.THRESH_BINARY)
-
-        # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-        # mask_eroded = cv2.morphologyEx(mask_thr, cv2.MORPH_OPEN, kernel)
 
         mask_for_ct = mask
 
@@ -45,6 +54,9 @@ if __name__ == '__main__':
                           cv2.contourArea(ct) > min_contour_area]
 
         frame_ct = cv2.drawContours(frame, large_contours, -1, (0, 255, 0), 2)
+
+        ellipse = cv2.ellipse(frame_ct, figures['rect'][0], figures['rect'][1], 
+           figures['rect'][2], 0, 360, (0, 255, 255), 2) 
 
         cv2.imshow("test", frame_ct)
 

@@ -199,6 +199,7 @@ class MainWindow(QMainWindow):
         '''Функция, считывающая все задания из файла db/all_tasks.json и
         вставляющая их в список QScrollArea'''
         font = QFont(self.font_family, 50)
+        title_max_lentgh = 25
 
         # Получение списка всех папок в папке pwd/db
         folders = [f for f in os.listdir('db') if os.path.isdir('db/' + f)]
@@ -211,8 +212,16 @@ class MainWindow(QMainWindow):
                 task_data = json.load(task_file)
                 # print(f'read file {name}')
 
+                title = task_data['title']
                 is_completed = 'Да' if task_data['is_complete'] else 'Нет'
                 difficulty = task_data['difficulty']
+
+            if len(title) > title_max_lentgh:
+                title = title[:title_max_lentgh - 3] + '...'
+
+            label_title = QLabel(title, self)
+            label_title.setFont(font)
+            label_title.setAlignment(Qt.AlignCenter)
 
             label_difficulty = QLabel(f'Сложность: {difficulty}/10', self)
             label_difficulty.setFont(font)
@@ -240,14 +249,16 @@ class MainWindow(QMainWindow):
             label_image.setMaximumHeight(480)
             label_image.setScaledContents(True)
 
-            layout.addWidget(label_difficulty, 0, 0)
-            layout.addWidget(label_is_complete, 1, 0)
-            layout.addWidget(button, 2, 0)
-            layout.addWidget(label_image, 0, 1, 3, 1)
+            layout.addWidget(label_title, 0, 0, 1, 2)
+            layout.addWidget(label_difficulty, 1, 0)
+            layout.addWidget(label_is_complete, 2, 0)
+            layout.addWidget(button, 3, 0)
+            layout.addWidget(label_image, 1, 1, 3, 1)
 
             layout.setRowStretch(0, 1)
             layout.setRowStretch(1, 1)
             layout.setRowStretch(2, 1)
+            layout.setRowStretch(3, 1)
 
             self.grid_items.append(item)
 

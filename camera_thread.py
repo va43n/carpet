@@ -206,10 +206,10 @@ class CameraThread(QThread):
         self._is_running = False
 
     def check_calibration_info_file(self):
-        if os.path.getsize('calibration_info.json') == 0:
+        if os.path.getsize('info/calibration_info.json') == 0:
             return
 
-        with open('calibration_info.json', 'r') as file:
+        with open('info/calibration_info.json', 'r') as file:
             data = json.load(file)
             self.rect_ct[0] = np.array(data['1'])
             self.rect_ct[1] = np.array(data['2'])
@@ -316,7 +316,7 @@ class CameraThread(QThread):
             '4': self.rect_ct[3].tolist()
         }
 
-        with open('calibration_info.json', 'w') as file:
+        with open('info/calibration_info.json', 'w') as file:
             json.dump(data, file, indent=4)
 
         print(f'{data=}')

@@ -1,4 +1,0 @@
-1) __init__ -> main.py, import (4)
-2) CameraThread -> camera_thread.py
-3) TaskWindow -> task_window.py, import (2)
-4) MainWindow -> main_window.py, import (3)
