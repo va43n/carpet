@@ -55,8 +55,9 @@ class Download():
                                     with open(f'{new_path}/task.json', 'r') as file:
                                         task_info = json.load(file)
 
-                                    print(task_info)
                                     task_info['title'] = file_data['title']
+                                    task_info['username'] = username
+                                    task_info['task_id'] = file_data['task_id']
 
                                     with open(f'{new_path}/task.json', 'w') as file:
                                         json.dump(task_info, file, indent=4)

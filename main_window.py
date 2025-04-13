@@ -210,8 +210,10 @@ class MainWindow(QMainWindow):
 
             with open(f'db/{name}/task.json', 'r') as task_file:
                 task_data = json.load(task_file)
-                # print(f'read file {name}')
+                if task_data['username'] != self.user.get_username():
+                    continue
 
+                task_id = task_data['task_id']
                 title = task_data['title']
                 is_completed = 'Да' if task_data['is_complete'] else 'Нет'
                 difficulty = task_data['difficulty']
@@ -240,7 +242,7 @@ class MainWindow(QMainWindow):
             # определеняемое путем
             button.clicked.connect(lambda click, path=name:
                                    self.go_to_chosen_task(path, self.w,
-                                                          self.h))
+                                                          self.h, task_id))
 
             label_image = QLabel(self)
             pixmap = QPixmap(f'db/{name}/preview.png')
@@ -262,10 +264,10 @@ class MainWindow(QMainWindow):
 
             self.grid_items.append(item)
 
-    def go_to_chosen_task(self, path: str, w: int, h: int):
+    def go_to_chosen_task(self, path: str, w: int, h: int, task_id: str):
         '''Функция, запускающая выбранное задание. Для этого запускается класс
         TaskWindow с параметром пути'''
-        new_window = TaskWindow(path, w, h, self.font_family, self)
+        new_window = TaskWindow(path, w, h, self.font_family, task_id, self)
         new_window.exec_()
 
     def go_to_menu(self):

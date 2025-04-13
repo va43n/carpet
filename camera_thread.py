@@ -131,17 +131,6 @@ class CameraThread(QThread):
             _, mask = cv2.threshold(blur, 30, 255, cv2.THRESH_BINARY)
             self.prev_frame = copy.deepcopy(frame_gray)
 
-            # # Получение маски переднего плана
-            # fg_mask = self.backSub.apply(self.frame)
-
-            # # Отсечение на маске пикселей, насыщенность которых меньше 170
-            # retval, mask_thr = cv2.threshold(fg_mask, 170, 255,
-            #                                  cv2.THRESH_BINARY)
-
-            # # Фильтрация очень маленьких объектов
-            # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-            # mask_eroded = cv2.morphologyEx(mask_thr, cv2.MORPH_OPEN, kernel)
-
             mask_for_ct = mask
 
             # Нахождение контуров
@@ -211,6 +200,7 @@ class CameraThread(QThread):
 
         with open('info/calibration_info.json', 'r') as file:
             data = json.load(file)
+            print('data =', data)
             self.rect_ct[0] = np.array(data['1'])
             self.rect_ct[1] = np.array(data['2'])
             self.rect_ct[2] = np.array(data['3'])

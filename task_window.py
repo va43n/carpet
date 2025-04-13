@@ -4,6 +4,7 @@ from PyQt5.QtGui import QFont, QPixmap, QImage
 from PyQt5.QtCore import Qt, pyqtSignal
 from PIL import Image
 from camera_thread import CameraThread
+from task_activity import TaskActivity
 import json
 
 
@@ -23,15 +24,21 @@ class TaskWindow(QDialog):
     # потока и передающий координаты нажатой точки
     set_point_signal = pyqtSignal(np.ndarray)
 
-    def __init__(self, path: str, w: int, h: int, font_family, main_window):
+    def __init__(self, path: str, w: int, h: int, font_family, task_id: str, main_window):
         '''Инициализатор класса, запускает окно с интерфейсом.'''
         super().__init__()
+
+        # id задания, которое сейчас проходит пациент
+        self.task_id = task_id
 
         # Скрываем курсор
         self.setCursor(Qt.BlankCursor)
 
         self.font_family = font_family
         self.main_window = main_window
+
+        # Класс для отправки активности пользователя на сервер
+        self.task_activity = TaskActivity()
 
         self.w = w
         self.h = h
@@ -146,6 +153,9 @@ class TaskWindow(QDialog):
 
     def show_ex(self, i):
         '''Функция, отображающая i-ю задачу на коврике'''
+        if i == 0:
+            self.task_activity.task_started(self.task_id)
+
         img_path = f'{self.path}/{self.all_exes[i][0]}'
 
         pixmap = QPixmap(img_path)
@@ -164,13 +174,15 @@ class TaskWindow(QDialog):
         Если строка - changed, значит задача была выполнена и нужно
         показать на экране следующую задачу;
         Если строка - end, значит последняя задача была выполнена,
-        нужно закончить выполнение упражнения, поставить 1 в файл is_complete
-        и вызвать функцию в главном окне, обновляющую информацию в меню
-        выбора'''
+        нужно закончить выполнение упражнения, поставить True в файл в
+        task.json в поле is_complete и вызвать функцию в главном окне,
+        обновляющую информацию в меню выбора'''
         if input == 'changed':
             self.curr_ex += 1
             self.show_ex(self.curr_ex)
         elif input == 'end':
+            self.task_activity.task_ended(self.task_id, 'Success')
+
             with open(f'{self.path}/task.json', 'r') as f:
                 data = json.load(f)
             data['is_complete'] = True
@@ -219,6 +231,7 @@ class TaskWindow(QDialog):
                 self.show_ex(self.curr_ex)
 
         elif event.button() == Qt.RightButton:
+            self.task_activity.task_ended(self.task_id, 'Fail')
             self.accept()
 
     def closeEvent(self, event):
