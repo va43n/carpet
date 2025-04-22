@@ -6,11 +6,14 @@ from main_window import MainWindow
 if __name__ == '__main__':
     print('Приложение запущено')
 
+    with open('info/calibration_info.json', 'w'):
+        pass
+
     app = QApplication(sys.argv)
 
     screen = app.primaryScreen()
     screen_size = screen.size()
-    window = MainWindow(screen_size.width(), screen_size.height())
+    window = MainWindow(1920, 1080)
 
     window.showFullScreen()
 

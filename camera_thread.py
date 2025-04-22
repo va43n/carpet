@@ -86,6 +86,10 @@ class CameraThread(QThread):
         self.new_figures = {}
         self.set_figures()
 
+        # Количество пикселей между точками, на которые разбивается
+        # контур движущегося объекта
+        self.step = 20
+
         # Определение переменной для нахождения маски переднего плана
         # self.backSub = cv2.bgsegm.createBackgroundSubtractorMOG()
 
@@ -133,6 +137,13 @@ class CameraThread(QThread):
 
             mask_for_ct = mask
 
+            # Если необходимо пропустить несколько кадров после калибровки
+            # или после выполнения задания:
+            if self.curr_skip >= 0 and self.curr_skip <= self.skip_frames_number:
+                self.curr_skip += 1
+                self.prev_frame = copy.deepcopy(frame_gray)
+                continue
+
             # Нахождение контуров
             contours, hierarchy = cv2.findContours(mask_for_ct,
                                                    cv2.RETR_EXTERNAL,
@@ -143,11 +154,38 @@ class CameraThread(QThread):
             large_contours = [ct for ct in contours if
                               cv2.contourArea(ct) > min_contour_area]
 
-            # Если необходимо пропустить несколько кадров после калибровки
-            # или после выполнения задания:
-            if self.curr_skip >= 0 and self.curr_skip <= self.skip_frames_number:
-                self.curr_skip += 1
-                continue
+            show = cv2.drawContours(self.frame, large_contours, -1, (0, 255, 0), 2)
+
+            show = cv2.line(show,
+                            self.rect_ct[0],
+                            self.rect_ct[1],
+                            (0, 0, 255), 2)
+            show = cv2.line(show,
+                            self.rect_ct[1],
+                            self.rect_ct[2],
+                            (0, 0, 255), 2)
+            show = cv2.line(show,
+                            self.rect_ct[2],
+                            self.rect_ct[3],
+                            (0, 0, 255), 2)
+            show = cv2.line(show,
+                            self.rect_ct[3],
+                            self.rect_ct[0],
+                            (0, 0, 255), 2)
+
+            for key in self.new_figures.keys():
+                fig = self.new_figures[key]
+
+                cx, cy = fig[0]
+                cx = self.w - cx
+                a, b = fig[1]
+                theta = radians(fig[2])
+
+                show = cv2.ellipse(show, (cx, cy), (a, b), theta, 0,
+                                   360, (255, 0, 255), 2)
+                show = cv2.ellipse(show, (cx, cy), (0, 0), 0, 0,
+                                   360, (255, 0, 255), 10)
+
 
             for ct in large_contours:
                 # Каждый контур превращается в прямоугольник с известными
@@ -156,9 +194,21 @@ class CameraThread(QThread):
                 # из задания (эллипса), если да, то задание выполнено.
                 x, y, w, h = cv2.boundingRect(ct)
                 points = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]
+
+                x_span = list(map(int, np.arange(x, x + w, self.step)))
+                y_span = list(map(int, np.arange(y, y + h, self.step)))
+
+                show = cv2.rectangle(show, points[0], points[2], (255, 0, 255), 2)
+
+                for xi in x_span:
+                    for yi in y_span:
+                        show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
+                                           360, (0, 0, 255), 10)
+
                 for pt in points:
                     for key in self.new_figures.keys():
                         fig = self.new_figures[key]
+
                         cx, cy = fig[0]
                         a, b = fig[1]
                         theta = radians(fig[2])
@@ -184,18 +234,27 @@ class CameraThread(QThread):
                 if is_completed:
                     break
 
-        # Остановка и закрытие камеры после завершения цикла
-        self.cam.stop()
-        self.cam.close()
+            cv2.imshow('test', show)
+            cv2.moveWindow('test', 1920, 0)
+
+        print('leave cycle')
 
     def stop(self):
         '''Функция остановки потока, останавливает и закрывает камеру'''
         self.cam.stop()
         self.cam.close()
+
         self._is_running = False
 
+        try:
+            cv2.destroyWindow('test')
+        except:
+            print('cam was not opened')
+
+        print('stop in thread')
+
     def check_calibration_info_file(self):
-        if os.path.getsize('info/calibration_info.json') == 0:
+        if os.stat('info/calibration_info.json').st_size == 0:
             return
 
         with open('info/calibration_info.json', 'r') as file:
@@ -237,12 +296,12 @@ class CameraThread(QThread):
         self.rect_ct[self.curr_point] = point
         self.curr_point += 1
         self.frame = cv2.ellipse(self.frame, point, (0, 0), 0, 0,
-                                 360, (0, 255, 0), 10)
+                                 360, (0, 0, 100), 10)
         if self.curr_point >= 2:
             self.frame = cv2.line(self.frame,
                                   self.rect_ct[self.curr_point - 1],
                                   self.rect_ct[self.curr_point - 2],
-                                  (0, 100, 0), 2)
+                                  (0, 0, 255), 2)
         rgb_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
         self.send_frame_to_window.emit(rgb_frame)
 
@@ -269,7 +328,7 @@ class CameraThread(QThread):
         ind_max = 0
         biggest = norm(rect_copy[0])
         lowest = norm(rect_copy[0])
-        for i in range(1, 3):
+        for i in range(1, 4):
             temp = norm(rect_copy[i])
             if lowest > temp:
                 lowest = temp
@@ -308,8 +367,6 @@ class CameraThread(QThread):
 
         with open('info/calibration_info.json', 'w') as file:
             json.dump(data, file, indent=4)
-
-        print(f'{data=}')
 
     def do_calibration(self):
         '''Функция, выполняющая саму калибровку, изменяющая координаты

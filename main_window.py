@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
         self.font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
 
         # Опредление стиля основных виджетов интерфейса
-        self.setStyleSheet("""
+        self.setStyleSheet('''
             QWidget {
                 background-color: #000000;
             }
@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
                 border: none;
             }
-            """)
+            ''')
 
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
@@ -320,5 +320,5 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         '''Функция, вызываемая при закрытии основного окна'''
-        with open('calibration_info.json', 'w'):
+        with open('info/calibration_info.json', 'w'):
             pass

@@ -49,14 +49,14 @@ class TaskWindow(QDialog):
         # ====================================================================
         # Задание параметров окна и определение виджетов
 
-        self.setStyleSheet("""
+        self.setStyleSheet('''
             QWidget {
                 background-color: #000000;
             }
             QLabel {
                 color: #FFFFFF;
             }
-        """)
+        ''')
 
         self.setWindowTitle(f'Задание {path}')
         self.setWindowModality(Qt.ApplicationModal)
@@ -232,11 +232,9 @@ class TaskWindow(QDialog):
 
         elif event.button() == Qt.RightButton:
             self.task_activity.task_ended(self.task_id, 'Fail')
-            self.accept()
+            self.thread.stop()
 
-    def closeEvent(self, event):
-        '''Функция, вызываемая при закрытии окна, завершает
-        выполнение потока CameraThread'''
-        self.thread.stop()
-        self.thread.wait()
-        event.accept()
+            # self.thread.wait()
+
+            self.accept()
+            print('task window closed')
