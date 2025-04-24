@@ -117,10 +117,7 @@ class TaskWindow(QDialog):
                                                   fig['radius'],
                                                   fig['angle']]])
 
-        # Количество задач задания
-        self.all_exes_count = len(self.all_exes)
-
-        # Текущий индекс задачи: от 0 до self.all_exes_count - 1
+        # Текущий индекс задачи: от 0 до len(self.all_exes) - 1
         self.curr_ex = 0
 
         # Статус калибровки: 0 - начало калибровки;

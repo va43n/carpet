@@ -96,6 +96,8 @@ class CameraThread(QThread):
         # True - если поток активен, иначе False
         self._is_running = True
 
+        self.pic_counter = 0
+
         self.check_calibration_info_file()
 
     def run(self):
@@ -154,8 +156,10 @@ class CameraThread(QThread):
             large_contours = [ct for ct in contours if
                               cv2.contourArea(ct) > min_contour_area]
 
+            # Вывод контуров на экран
             show = cv2.drawContours(self.frame, large_contours, -1, (0, 255, 0), 2)
 
+            # Вывод калибровочной рамки на экран
             show = cv2.line(show,
                             self.rect_ct[0],
                             self.rect_ct[1],
@@ -173,11 +177,11 @@ class CameraThread(QThread):
                             self.rect_ct[0],
                             (0, 0, 255), 2)
 
+            # Вывод фигур на экран
             for key in self.new_figures.keys():
                 fig = self.new_figures[key]
 
                 cx, cy = fig[0]
-                cx = self.w - cx
                 a, b = fig[1]
                 theta = radians(fig[2])
 
@@ -185,7 +189,6 @@ class CameraThread(QThread):
                                    360, (255, 0, 255), 2)
                 show = cv2.ellipse(show, (cx, cy), (0, 0), 0, 0,
                                    360, (255, 0, 255), 10)
-
 
             for ct in large_contours:
                 # Каждый контур превращается в прямоугольник с известными
@@ -198,42 +201,55 @@ class CameraThread(QThread):
                 x_span = list(map(int, np.arange(x, x + w, self.step)))
                 y_span = list(map(int, np.arange(y, y + h, self.step)))
 
+                # Вывод прямоугольника точек на экран
                 show = cv2.rectangle(show, points[0], points[2], (255, 0, 255), 2)
 
+                # Вывод всех точек на экран
                 for xi in x_span:
                     for yi in y_span:
                         show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
                                            360, (0, 0, 255), 10)
 
-                for pt in points:
-                    for key in self.new_figures.keys():
-                        fig = self.new_figures[key]
+                for xi in x_span:
+                    for yi in y_span:
+                        for key in self.new_figures.keys():
+                            fig = self.new_figures[key]
 
-                        cx, cy = fig[0]
-                        a, b = fig[1]
-                        theta = radians(fig[2])
+                            cx, cy = fig[0]
+                            a, b = fig[1]
+                            theta = radians(fig[2])
 
-                        dx = self.w - pt[0] - cx
-                        dy = self.h - pt[1] - cy
+                            dx = xi - cx
+                            dy = yi - cy
 
-                        rot_x = dx * cos(theta) + dy * sin(theta)
-                        rot_y = dx * (-sin(theta)) + dy * cos(theta)
+                            rot_x = dx * cos(theta) + dy * sin(theta)
+                            rot_y = dx * (-sin(theta)) + dy * cos(theta)
 
-                        eq = (rot_x ** 2) / (a ** 2) + (rot_y ** 2) / (b ** 2)
-                        if eq <= 1:
-                            self.is_changing_ex = True
-                            print(f'Ex {self.curr_ex + 1} completed')
-                            print(f'stand on figures[{key}] ({cx}, {cy}; '
-                                  f'{a}, {b}; {theta}) by {pt=} in {points=}')
-                            self.ex_completed()
+                            eq = (rot_x ** 2) / (a ** 2) + (rot_y ** 2) / (b ** 2)
+                            if eq <= 1:
+                                self.is_changing_ex = True
+                                print(f'Ex {self.curr_ex + 1} completed')
+                                print(f'stand on figures[{key}] ({cx}, {cy}; '
+                                      f'{a}, {b}; {theta}) by point=[{xi}, {yi}] in {points=}')
+                                self.ex_completed()
 
-                            is_completed = True
+                                is_completed = True
+
+                                show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
+                                   360, (255, 0, 0), 10)
+
+                                cv2.imwrite(f'img{self.pic_counter}.jpg', show)
+                                self.pic_counter += 1
+
+                                break
+                        if is_completed:
                             break
                     if is_completed:
                         break
                 if is_completed:
                     break
 
+            # Вывод на экран изображений
             cv2.imshow('test', show)
             cv2.moveWindow('test', 1920, 0)
 
@@ -375,6 +391,12 @@ class CameraThread(QThread):
 
         self.is_calibrated = True
 
+        # Экран проектора перевернут, поэтому нужно отразить координаты
+        # центров фигур по горизонтали и вертикали
+        for key in self.figures.keys():
+            self.figures[key][0][0] = self.w - self.figures[key][0][0]
+            self.figures[key][0][1] = self.h - self.figures[key][0][1]
+
         self.new_figures = copy.deepcopy(self.figures)
 
         angle = (atan((self.rect_ct[3][1] - self.rect_ct[2][1])
@@ -394,8 +416,6 @@ class CameraThread(QThread):
 
             n_fig[0][0] = round(n_fig[0][0])
             n_fig[0][1] = round(n_fig[0][1])
-
-        self.is_calibrating = False
 
         self.curr_skip = 0
 
