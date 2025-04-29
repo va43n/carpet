@@ -1,0 +1,18 @@
+[Unit]
+Description=Python carpet program
+After=network.target display-manager.service
+Wants=network.target
+Requires=display-manager.service
+
+[Service]
+ExecStart=/usr/bin/python3 /home/login/Desktop/prog/main.py
+WorkingDirectory=/home/login/Desktop/prog/
+StandardOutput=inherit
+StandardError=inherit
+Restart=no
+User=login
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/login/.Xauthority
+
+[Install]
+WantedBy=graphical.target

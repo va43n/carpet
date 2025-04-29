@@ -96,8 +96,6 @@ class CameraThread(QThread):
         # True - если поток активен, иначе False
         self._is_running = True
 
-        self.pic_counter = 0
-
         self.check_calibration_info_file()
 
     def run(self):
@@ -238,9 +236,6 @@ class CameraThread(QThread):
                                 show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
                                    360, (255, 0, 0), 10)
 
-                                cv2.imwrite(f'img{self.pic_counter}.jpg', show)
-                                self.pic_counter += 1
-
                                 break
                         if is_completed:
                             break
@@ -322,10 +317,11 @@ class CameraThread(QThread):
         self.send_frame_to_window.emit(rgb_frame)
 
         # Если пользователь ввел 4 точки, необходимо выполнить саму
-        # камеры
+        # калибровку камеры
         if self.curr_point == 4:
             self.sort_calibration_points()
             self.do_calibration()
+            self.is_calibrating = False
 
     def sort_calibration_points(self):
         '''Функция, сортирующая массив точек калибровки для последующей
