@@ -1,3 +1,7 @@
+1) Ввести команду:
+sudo vi /etc/systemd/system/carpet.service
+
+2) Вставить текст:
 [Unit]
 Description=Python carpet program
 After=network.target display-manager.service
@@ -16,3 +20,10 @@ Environment=XAUTHORITY=/home/login/.Xauthority
 
 [Install]
 WantedBy=graphical.target
+
+3) Сохранить с помощью :wq.
+4) Последовательно запустить следующие команды:
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable carpet.service
+sudo systemctl start carpet.service
