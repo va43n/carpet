@@ -136,6 +136,7 @@ class TaskWindow(QDialog):
         # Бинд сигналов класса CameraThread к функциям данного класса
         self.thread.send_frame_to_window.connect(self.set_image)
         self.thread.send_ex_complited_announce.connect(self.ex_changed)
+        self.thread.send_first_calibration_ended.connect(self.task_started)
 
         # Запуск потока
         self.thread.start()
@@ -150,9 +151,6 @@ class TaskWindow(QDialog):
 
     def show_ex(self, i):
         '''Функция, отображающая i-ю задачу на коврике'''
-        if i == 0:
-            self.task_activity.task_started(self.task_id)
-
         img_path = f'{self.path}/{self.all_exes[i][0]}'
 
         pixmap = QPixmap(img_path)
@@ -189,6 +187,13 @@ class TaskWindow(QDialog):
             self.main_window.refresh_completion_info()
 
             self.accept()
+
+    def task_started(self):
+        '''Функция, вызываемая через сигнал из класса CameraThread,
+        отправляющая на сервер уведомление о том, что выполнение 
+        задания началось.'''
+        self.task_activity.task_started(self.task_id)
+        pass
 
     def mousePressEvent(self, event):
         '''Функция, орабатывающая пользовательский ввод с мыши.

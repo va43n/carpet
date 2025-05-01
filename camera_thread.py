@@ -29,6 +29,13 @@ class CameraThread(QThread):
     # нужно закончить выполнение упражнения.
     send_ex_complited_announce = pyqtSignal(str)
 
+    # Сигнал, связывающий этот класс с классом TaskWindow, вызывающийся
+    # в первый раз, когда происходит калибровка. Как только это
+    # происходит, так сразу же начинается выполнение задания, нужно
+    # отправить запрос на сервер через task_activity и включить
+    # обратный отсчет.
+    send_first_calibration_ended = pyqtSignal()
+
     def __init__(self, w: int, h: int, all_exes):
         '''Инициализатор класса, включающий камеру и задающий
         основные параметры'''
@@ -158,35 +165,35 @@ class CameraThread(QThread):
             show = cv2.drawContours(self.frame, large_contours, -1, (0, 255, 0), 2)
 
             # Вывод калибровочной рамки на экран
-            show = cv2.line(show,
-                            self.rect_ct[0],
-                            self.rect_ct[1],
-                            (0, 0, 255), 2)
-            show = cv2.line(show,
-                            self.rect_ct[1],
-                            self.rect_ct[2],
-                            (0, 0, 255), 2)
-            show = cv2.line(show,
-                            self.rect_ct[2],
-                            self.rect_ct[3],
-                            (0, 0, 255), 2)
-            show = cv2.line(show,
-                            self.rect_ct[3],
-                            self.rect_ct[0],
-                            (0, 0, 255), 2)
+            # show = cv2.line(show,
+            #                 self.rect_ct[0],
+            #                 self.rect_ct[1],
+            #                 (0, 0, 255), 2)
+            # show = cv2.line(show,
+            #                 self.rect_ct[1],
+            #                 self.rect_ct[2],
+            #                 (0, 0, 255), 2)
+            # show = cv2.line(show,
+            #                 self.rect_ct[2],
+            #                 self.rect_ct[3],
+            #                 (0, 0, 255), 2)
+            # show = cv2.line(show,
+            #                 self.rect_ct[3],
+            #                 self.rect_ct[0],
+            #                 (0, 0, 255), 2)
 
             # Вывод фигур на экран
-            for key in self.new_figures.keys():
-                fig = self.new_figures[key]
+            # for key in self.new_figures.keys():
+            #     fig = self.new_figures[key]
 
-                cx, cy = fig[0]
-                a, b = fig[1]
-                theta = radians(fig[2])
+            #     cx, cy = fig[0]
+            #     a, b = fig[1]
+            #     theta = radians(fig[2])
 
-                show = cv2.ellipse(show, (cx, cy), (a, b), theta, 0,
-                                   360, (255, 0, 255), 2)
-                show = cv2.ellipse(show, (cx, cy), (0, 0), 0, 0,
-                                   360, (255, 0, 255), 10)
+            #     show = cv2.ellipse(show, (cx, cy), (a, b), theta, 0,
+            #                        360, (255, 0, 255), 2)
+            #     show = cv2.ellipse(show, (cx, cy), (0, 0), 0, 0,
+            #                        360, (255, 0, 255), 10)
 
             for ct in large_contours:
                 # Каждый контур превращается в прямоугольник с известными
@@ -200,13 +207,13 @@ class CameraThread(QThread):
                 y_span = list(map(int, np.arange(y, y + h, self.step)))
 
                 # Вывод прямоугольника точек на экран
-                show = cv2.rectangle(show, points[0], points[2], (255, 0, 255), 2)
+                # show = cv2.rectangle(show, points[0], points[2], (255, 0, 255), 2)
 
                 # Вывод всех точек на экран
-                for xi in x_span:
-                    for yi in y_span:
-                        show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
-                                           360, (0, 0, 255), 10)
+                # for xi in x_span:
+                #     for yi in y_span:
+                #         show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
+                #                            360, (0, 0, 255), 10)
 
                 for xi in x_span:
                     for yi in y_span:
@@ -233,8 +240,8 @@ class CameraThread(QThread):
 
                                 is_completed = True
 
-                                show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
-                                   360, (255, 0, 0), 10)
+                                # show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
+                                #    360, (255, 0, 0), 10)
 
                                 break
                         if is_completed:
@@ -245,8 +252,8 @@ class CameraThread(QThread):
                     break
 
             # Вывод на экран изображений
-            cv2.imshow('test', show)
-            cv2.moveWindow('test', 1920, 0)
+            # cv2.imshow('test', show)
+            # cv2.moveWindow('test', 1920, 0)
 
         print('leave cycle')
 
@@ -385,8 +392,6 @@ class CameraThread(QThread):
         фигур, их размеры ии углы наклона на новые, соответствующие новому
         окну'''
 
-        self.is_calibrated = True
-
         # Экран проектора перевернут, поэтому нужно отразить координаты
         # центров фигур по горизонтали и вертикали
         for key in self.figures.keys():
@@ -414,6 +419,10 @@ class CameraThread(QThread):
             n_fig[0][1] = round(n_fig[0][1])
 
         self.curr_skip = 0
+
+        if not self.is_calibrated:
+            self.send_first_calibration_ended.emit()
+            self.is_calibrated = True
 
     def ex_completed(self):
         '''Функция, вызывающаяся, когда задача выполнена, и посылающая с
