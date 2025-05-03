@@ -37,6 +37,12 @@ class TaskWindow(QDialog):
         self.font_family = font_family
         self.main_window = main_window
 
+        # Если False - значит задание пока и не выполнено, и не
+        # не выполнено, если True - значит что-то одно из этого
+        # произошло, и теперь при нажатии на ПКМ окно будет
+        # закрыто
+        self.is_window_closing = False
+
         # Класс для отправки активности пользователя на сервер
         self.task_activity = TaskActivity()
 
@@ -176,6 +182,11 @@ class TaskWindow(QDialog):
             self.curr_ex += 1
             self.show_ex(self.curr_ex)
         elif input == 'end':
+            # Картинка 'Задание выполнено!' появляется на экране
+            img_path = f'pics/success.png'
+            pixmap = QPixmap(img_path)
+            self.img.setPixmap(pixmap)
+
             self.task_activity.task_ended(self.task_id, 'Success')
 
             with open(f'{self.path}/task.json', 'r') as f:
@@ -186,7 +197,9 @@ class TaskWindow(QDialog):
 
             self.main_window.refresh_completion_info()
 
-            self.accept()
+            self.thread.stop()
+
+            self.is_window_closing = True
 
     def task_started(self):
         '''Функция, вызываемая через сигнал из класса CameraThread,
@@ -233,10 +246,15 @@ class TaskWindow(QDialog):
                 self.show_ex(self.curr_ex)
 
         elif event.button() == Qt.RightButton:
+            if self.is_window_closing:
+                self.accept()
+
+            # Картинка 'Задание не выполнено' появляется на экране
+            img_path = 'pics/fail.png'
+            pixmap = QPixmap(img_path)
+            self.img.setPixmap(pixmap)
+
             self.task_activity.task_ended(self.task_id, 'Fail')
+
             self.thread.stop()
-
-            # self.thread.wait()
-
-            self.accept()
-            print('task window closed')
+            self.is_window_closing = True

@@ -162,7 +162,7 @@ class CameraThread(QThread):
                               cv2.contourArea(ct) > min_contour_area]
 
             # Вывод контуров на экран
-            show = cv2.drawContours(self.frame, large_contours, -1, (0, 255, 0), 2)
+            # show = cv2.drawContours(self.frame, large_contours, -1, (0, 255, 0), 2)
 
             # Вывод калибровочной рамки на экран
             # show = cv2.line(show,
@@ -183,17 +183,17 @@ class CameraThread(QThread):
             #                 (0, 0, 255), 2)
 
             # Вывод фигур на экран
-            # for key in self.new_figures.keys():
-            #     fig = self.new_figures[key]
+            for key in self.new_figures.keys():
+                fig = self.new_figures[key]
 
-            #     cx, cy = fig[0]
-            #     a, b = fig[1]
-            #     theta = radians(fig[2])
+                cx, cy = fig[0]
+                a, b = fig[1]
+                theta = radians(fig[2])
 
-            #     show = cv2.ellipse(show, (cx, cy), (a, b), theta, 0,
-            #                        360, (255, 0, 255), 2)
-            #     show = cv2.ellipse(show, (cx, cy), (0, 0), 0, 0,
-            #                        360, (255, 0, 255), 10)
+                # show = cv2.ellipse(show, (cx, cy), (a, b), theta, 0,
+                #                    360, (255, 0, 255), 2)
+                # show = cv2.ellipse(show, (cx, cy), (0, 0), 0, 0,
+                #                    360, (255, 0, 255), 10)
 
             for ct in large_contours:
                 # Каждый контур превращается в прямоугольник с известными
@@ -240,8 +240,9 @@ class CameraThread(QThread):
 
                                 is_completed = True
 
-                                # show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
-                                #    360, (255, 0, 0), 10)
+                                # Вывод на экран точки, которая выполнила задание
+                                show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
+                                   360, (255, 0, 0), 10)
 
                                 break
                         if is_completed:
@@ -267,7 +268,7 @@ class CameraThread(QThread):
         try:
             cv2.destroyWindow('test')
         except:
-            print('cam was not opened')
+            print('window was not opened')
 
         print('stop in thread')
 

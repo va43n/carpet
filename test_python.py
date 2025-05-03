@@ -1,8 +1,9 @@
-import numpy as np
+import cv2
 
-x, w = 1000, 600
-step = 900
+img = cv2.imread("pics/success.png", cv2.IMREAD_COLOR)
 
-x_span = list(map(int, np.arange(x, x + w, step)))
+cv2.imshow("image", img)
 
-print(x_span)
+cv2.waitKey(0)
+
+cv2.destroyAllWindows()
