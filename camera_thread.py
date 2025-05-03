@@ -241,8 +241,8 @@ class CameraThread(QThread):
                                 is_completed = True
 
                                 # Вывод на экран точки, которая выполнила задание
-                                show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
-                                   360, (255, 0, 0), 10)
+                                # show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
+                                #    360, (255, 0, 0), 10)
 
                                 break
                         if is_completed:
@@ -299,6 +299,8 @@ class CameraThread(QThread):
     @pyqtSlot(int)
     def start_calibration(self, input):
         '''Функция, начинающая калибровку.'''
+        # Если с камеры еще не был считан ни один кадр, калибровку
+        # начинать пока нельзя
         if isinstance(self.frame, int):
             return
 

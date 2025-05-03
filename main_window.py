@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
 
         # ====================================================================
         # Настройка главной страницы
-        self.menu_label_title = QLabel('Задания', self)
+        self.menu_label_title = QLabel('Коврик с заданиями', self)
         self.menu_label_title.setAlignment(Qt.AlignCenter)
 
         self.menu_button_choose = QPushButton('Начать', self)
