@@ -13,14 +13,19 @@ class TaskActivity():
         if username == '':
             return -1
 
+        password = self.user.get_password()
+        if password == '':
+            return -1
+
         response = requests.post(self.task_started_url, json={'username': username,
+                                                              'password': password,
                                                               'task_id': task_id})
 
         print(response)
 
         if response.status_code == 200:
             data = response.json()
-            print('good luck!')
+            print('task started on server')
         else:
             print('Cannot start task on server:', response.status_code,
                                                   response.text)
@@ -30,14 +35,18 @@ class TaskActivity():
         if username == '':
             return -1
 
+        password = self.user.get_password()
+        if password == '':
+            return -1
+
         response = requests.post(self.task_ended_url, json={'username': username,
-                                                              'task_id': task_id,
-                                                              'result': result})
+                                                            'password': password,
+                                                            'task_id': task_id,
+                                                            'result': result})
 
         print(response)
 
         if response.status_code == 200:
-            data = response.json()
             print('task ended on server')
         else:
             print('Cannot end task on server:', response.status_code,

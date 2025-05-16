@@ -265,10 +265,10 @@ class CameraThread(QThread):
 
         self._is_running = False
 
-        try:
-            cv2.destroyWindow('test')
-        except:
-            print('window was not opened')
+        # try:
+        #     cv2.destroyWindow('test')
+        # except:
+        #     print('window was not opened')
 
         print('stop in thread')
 
@@ -438,8 +438,8 @@ class CameraThread(QThread):
 
         self.curr_ex += 1
         if self.curr_ex >= self.all_exes_count:
-            self.cam.stop()
-            self.cam.close()
+            # self.cam.stop()
+            # self.cam.close()
             self.send_ex_complited_announce.emit('end')
         else:
             self.set_figures()

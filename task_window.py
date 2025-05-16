@@ -214,6 +214,9 @@ class TaskWindow(QDialog):
         Если пользователь нажал ПКМ, значит нужно завершить выполнение
         задания.'''
         if event.button() == Qt.LeftButton:
+            if self.is_window_closing:
+                return
+
             if self.calibrate_state == 0:
                 # Включаем курсор
                 self.unsetCursor()

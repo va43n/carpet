@@ -66,6 +66,7 @@ class Download():
 
                                 print(f'Archive was extracted and deleted')
                             except Exception as e:
+                                os.remove(file_path)
                                 print(f'Extracting error: {e}')
                         else:
                             os.remove(file_path)
