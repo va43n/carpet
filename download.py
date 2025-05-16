@@ -16,7 +16,12 @@ class Download():
         if username == '':
             return -1
 
-        response = requests.post(self.url, json={'username': username})
+        password = self.user.get_username()
+        if password == '':
+            return -1
+
+        response = requests.post(self.url, json={'username': username,
+                                                 'password': password})
 
         print(response)
 
