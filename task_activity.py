@@ -9,6 +9,8 @@ class TaskActivity():
     user = UserInfo()
 
     def task_started(self, task_id):
+        print(task_id)
+
         username = self.user.get_username()
         if username == '':
             return -1
@@ -31,6 +33,8 @@ class TaskActivity():
                                                   response.text)
 
     def task_ended(self, task_id, result):
+        print(task_id)
+
         username = self.user.get_username()
         if username == '':
             return -1

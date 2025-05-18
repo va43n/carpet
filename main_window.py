@@ -280,11 +280,13 @@ class MainWindow(QMainWindow):
             button_start.setSizePolicy(QSizePolicy.Expanding,
                                  QSizePolicy.Expanding)
 
+            print(name, task_id)
+
             # Каждая кнопка в списке запускает свое задание,
             # определеняемое путем
             button_start.clicked.connect(lambda click, path=name:
                                    self.go_to_chosen_task(path, self.w,
-                                                          self.h, task_id))
+                                                          self.h, path))
 
             button_delete = QPushButton('Удалить', self)
             button_delete.setFont(font)
@@ -320,6 +322,7 @@ class MainWindow(QMainWindow):
     def go_to_chosen_task(self, path: str, w: int, h: int, task_id: str):
         '''Функция, запускающая выбранное задание. Для этого запускается класс
         TaskWindow с параметром пути'''
+        print('start task with task id', task_id)
         new_window = TaskWindow(path, w, h, self.font_family, task_id, self)
         new_window.exec_()
 

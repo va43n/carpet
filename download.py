@@ -16,7 +16,7 @@ class Download():
         if username == '':
             return -1
 
-        password = self.user.get_username()
+        password = self.user.get_password()
         if password == '':
             return -1
 

@@ -28,6 +28,8 @@ class TaskWindow(QDialog):
         '''Инициализатор класса, запускает окно с интерфейсом.'''
         super().__init__()
 
+        print("in taskWindow", path, task_id)
+
         # id задания, которое сейчас проходит пациент
         self.task_id = task_id
 
@@ -195,7 +197,7 @@ class TaskWindow(QDialog):
             with open(f'{self.path}/task.json', 'w') as f:
                 json.dump(data, f, indent=4)
 
-            self.main_window.refresh_completion_info()
+            self.main_window.refresh_tasks_info()
 
             self.thread.stop()
 
