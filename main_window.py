@@ -23,16 +23,17 @@ class MainWindow(QMainWindow):
         основные параметры.'''
         super().__init__()
 
-        # Класс с настройками пользователя
+        # Объект класса с информацией пользователя
         self.user = UserInfo()
 
-        # Класс для скачивания новых заданий
+        # Объект класса для скачивания новых заданий
         self.download = Download()
-        self.download.dowload_patient_files()
+        self.download.download_patient_files()
 
-        # Настройка основного окна
-        self.setWindowTitle('Главное меню')
+        # Установка названия приложения
+        self.setWindowTitle('Коврик')
 
+        # Установка размеров окна
         self.w = w
         self.h = h
 
@@ -94,27 +95,27 @@ class MainWindow(QMainWindow):
 
         # ====================================================================
         # Настройка меню
-        self.menu_label_title = QLabel('Коврик с заданиями', self)
-        self.menu_label_title.setAlignment(Qt.AlignCenter)
-        self.menu_label_title.setFont(font)
+        menu_label_title = QLabel('Коврик с заданиями', self)
+        menu_label_title.setAlignment(Qt.AlignCenter)
+        menu_label_title.setFont(font)
 
-        self.menu_button_choose = QPushButton('Начать', self)
-        self.menu_button_choose.setSizePolicy(QSizePolicy.Expanding,
+        menu_button_choose = QPushButton('Начать', self)
+        menu_button_choose.setSizePolicy(QSizePolicy.Expanding,
                                               QSizePolicy.Expanding)
-        self.menu_button_choose.clicked.connect(self.go_to_choose)
-        self.menu_button_choose.setFont(font)
+        menu_button_choose.clicked.connect(self.go_to_choose)
+        menu_button_choose.setFont(font)
 
-        self.menu_button_options = QPushButton('Настройки', self)
-        self.menu_button_options.setSizePolicy(QSizePolicy.Expanding,
+        menu_button_options = QPushButton('Настройки', self)
+        menu_button_options.setSizePolicy(QSizePolicy.Expanding,
                                                QSizePolicy.Expanding)
-        self.menu_button_options.clicked.connect(self.go_to_options)
-        self.menu_button_options.setFont(font)
+        menu_button_options.clicked.connect(self.go_to_options)
+        menu_button_options.setFont(font)
 
-        self.menu_button_exit = QPushButton('Выйти', self)
-        self.menu_button_exit.setSizePolicy(QSizePolicy.Expanding,
+        menu_button_exit = QPushButton('Выйти', self)
+        menu_button_exit.setSizePolicy(QSizePolicy.Expanding,
                                             QSizePolicy.Expanding)
-        self.menu_button_exit.clicked.connect(self.close)
-        self.menu_button_exit.setFont(font)
+        menu_button_exit.clicked.connect(self.close)
+        menu_button_exit.setFont(font)
 
         menu_layout = QGridLayout()
         menu_layout.setRowStretch(0, 100)
@@ -125,49 +126,45 @@ class MainWindow(QMainWindow):
         menu_layout.setColumnStretch(1, 1)
         menu_layout.setColumnStretch(2, 1)
 
-        menu_layout.addWidget(self.menu_label_title, 0, 0, 1, 3)
-        menu_layout.addWidget(self.menu_button_choose, 1, 1)
-        menu_layout.addWidget(self.menu_button_options, 2, 1)
-        menu_layout.addWidget(self.menu_button_exit, 3, 1)
+        menu_layout.addWidget(menu_label_title, 0, 0, 1, 3)
+        menu_layout.addWidget(menu_button_choose, 1, 1)
+        menu_layout.addWidget(menu_button_options, 2, 1)
+        menu_layout.addWidget(menu_button_exit, 3, 1)
         self.page_menu.setLayout(menu_layout)
         # ====================================================================
 
         # ====================================================================
         # Настройка страницы с выбором задания
-        self.choose_label_title = QLabel('Выберите задание', self)
-        self.choose_label_title.setAlignment(Qt.AlignCenter)
-        self.choose_label_title.setFont(font)
+        choose_label_title = QLabel('Выберите задание', self)
+        choose_label_title.setAlignment(Qt.AlignCenter)
+        choose_label_title.setFont(font)
 
         hbox_layout = QHBoxLayout()
-        self.choose_button_refresh = QPushButton('Обновить', self)
-        self.choose_button_refresh.setSizePolicy(QSizePolicy.Expanding,
+        choose_button_refresh = QPushButton('Обновить', self)
+        choose_button_refresh.setSizePolicy(QSizePolicy.Expanding,
                                                  QSizePolicy.Expanding)
-        self.choose_button_refresh.clicked.connect(self.refresh_tasks_info)
-        self.choose_button_refresh.setFont(font)
-        hbox_layout.addWidget(self.choose_button_refresh)
+        choose_button_refresh.clicked.connect(self.refresh_tasks_info)
+        choose_button_refresh.setFont(font)
+        hbox_layout.addWidget(choose_button_refresh)
 
-        self.choose_button_back = QPushButton('Назад в меню', self)
-        self.choose_button_back.setSizePolicy(QSizePolicy.Expanding,
+        choose_button_back = QPushButton('Назад в меню', self)
+        choose_button_back.setSizePolicy(QSizePolicy.Expanding,
                                               QSizePolicy.Expanding)
-        self.choose_button_back.clicked.connect(self.go_to_menu)
-        self.choose_button_back.setFont(font)
-        hbox_layout.addWidget(self.choose_button_back)
+        choose_button_back.clicked.connect(self.go_to_menu)
+        choose_button_back.setFont(font)
+        hbox_layout.addWidget(choose_button_back)
 
-        self.choose_scroll_area = QScrollArea()
-        self.choose_scroll_area.setWidgetResizable(True)
+        choose_scroll_area = QScrollArea()
+        choose_scroll_area.setWidgetResizable(True)
 
+        # Массив виджетов с заданиями
         self.grid_items = []
-        self.get_grid_items()
-        choose_v_cont = QWidget()
-        choose_v = QVBoxLayout(choose_v_cont)
-        for i, item in enumerate(self.grid_items):
-            choose_v.addWidget(item)
-        self.choose_scroll_area.setWidget(choose_v_cont)
+        self.refresh_tasks_info()
 
         choose_layout = QVBoxLayout()
 
-        choose_layout.addWidget(self.choose_label_title)
-        choose_layout.addWidget(self.choose_scroll_area)
+        choose_layout.addWidget(choose_label_title)
+        choose_layout.addWidget(choose_scroll_area)
         choose_layout.addLayout(hbox_layout)
 
         choose_layout.setStretch(0, 20)
@@ -179,54 +176,54 @@ class MainWindow(QMainWindow):
 
         # ====================================================================
         # Настройка страницы с настройками
-        self.options_label_title = QLabel('Настройки', self)
-        self.options_label_title.setAlignment(Qt.AlignCenter)
-        self.options_label_title.setFont(font)
+        options_label_title = QLabel('Настройки', self)
+        options_label_title.setAlignment(Qt.AlignCenter)
+        options_label_title.setFont(font)
 
-        self.options_label_username = QLabel('Введите логин', self)
-        self.options_label_username.setFont(font)
+        options_label_username = QLabel('Введите логин', self)
+        options_label_username.setFont(font)
 
-        self.options_label_password = QLabel('Введите пароль', self)
-        self.options_label_password.setFont(font)
+        options_label_password = QLabel('Введите пароль', self)
+        options_label_password.setFont(font)
 
-        self.options_label_result = QLabel('', self)
-        self.options_label_result.setAlignment(Qt.AlignCenter)
-        self.options_label_result.setFont(font)
+        options_label_result = QLabel('', self)
+        options_label_result.setAlignment(Qt.AlignCenter)
+        options_label_result.setFont(font)
 
-        self.options_edit_username = QLineEdit()
-        self.options_edit_username.setText(self.user.get_username())
-        self.options_edit_username.setFont(font)
+        options_edit_username = QLineEdit()
+        options_edit_username.setText(self.user.get_username())
+        options_edit_username.setFont(font)
 
-        self.options_edit_password = QLineEdit()
-        self.options_edit_password.setText(self.user.get_password())
-        self.options_edit_password.setFont(font)
+        options_edit_password = QLineEdit()
+        options_edit_password.setText(self.user.get_password())
+        options_edit_password.setFont(font)
 
-        self.options_button_set = QPushButton('Сохранить', self)
-        self.options_button_set.setFont(font)
-        self.options_button_set.clicked.connect(lambda click:
-                                   self.user.set_username(
-                                        self.options_edit_username.text(),
-                                        self.options_edit_password.text(),
-                                        self.options_label_result.setText)
+        options_button_set = QPushButton('Сохранить', self)
+        options_button_set.setFont(font)
+        options_button_set.clicked.connect(lambda click:
+                                   self.user.set_data(
+                                        options_edit_username.text(),
+                                        options_edit_password.text(),
+                                        options_label_result.setText)
                                    )
 
-        self.options_button_back = QPushButton('Назад в меню', self)
-        self.options_button_back.setFont(font)
-        self.options_button_back.clicked.connect(self.go_to_menu)
+        options_button_back = QPushButton('Назад в меню', self)
+        options_button_back.setFont(font)
+        options_button_back.clicked.connect(self.go_to_menu)
 
         options_layout = QVBoxLayout()
-        options_layout.addWidget(self.options_label_title)
+        options_layout.addWidget(options_label_title)
 
-        options_layout.addWidget(self.options_label_username)
-        options_layout.addWidget(self.options_edit_username)
+        options_layout.addWidget(options_label_username)
+        options_layout.addWidget(options_edit_username)
 
-        options_layout.addWidget(self.options_label_password)
-        options_layout.addWidget(self.options_edit_password)
+        options_layout.addWidget(options_label_password)
+        options_layout.addWidget(options_edit_password)
 
-        options_layout.addWidget(self.options_button_set)
-        options_layout.addWidget(self.options_label_result)
+        options_layout.addWidget(options_button_set)
+        options_layout.addWidget(options_label_result)
 
-        options_layout.addWidget(self.options_button_back)
+        options_layout.addWidget(options_button_back)
         self.page_options.setLayout(options_layout)
         # ====================================================================
 
@@ -250,6 +247,7 @@ class MainWindow(QMainWindow):
             item = QWidget()
             layout = QGridLayout(item)
 
+            # Открытие файла задания и считывание необходимых параметров
             with open(f'db/{name}/task.json', 'r') as task_file:
                 task_data = json.load(task_file)
                 if task_data['username'] != self.user.get_username():
@@ -275,26 +273,24 @@ class MainWindow(QMainWindow):
             label_is_complete.setFont(font)
             label_is_complete.setAlignment(Qt.AlignCenter)
 
+            # Каждая кнопка Начать в списке запускает свое задание,
+            # определеняемое путем
             button_start = QPushButton('Начать', self)
             button_start.setFont(font)
             button_start.setSizePolicy(QSizePolicy.Expanding,
                                  QSizePolicy.Expanding)
 
-            print(name, task_id)
-
-            # Каждая кнопка в списке запускает свое задание,
-            # определеняемое путем
             button_start.clicked.connect(lambda click, path=name:
                                    self.go_to_chosen_task(path, self.w,
                                                           self.h, path))
 
+            # Каждая кнопка Удалить в списке удаляет свое задание,
+            # определеняемое путем
             button_delete = QPushButton('Удалить', self)
             button_delete.setFont(font)
             button_delete.setSizePolicy(QSizePolicy.Expanding,
                                         QSizePolicy.Expanding)
 
-            # Каждая кнопка в списке удаляет свое задание,
-            # определеняемое путем
             button_delete.clicked.connect(lambda click, path=name:
                                    self.delete_chosen_task(path))
 
@@ -320,8 +316,8 @@ class MainWindow(QMainWindow):
             self.grid_items.append(item)
 
     def go_to_chosen_task(self, path: str, w: int, h: int, task_id: str):
-        '''Функция, запускающая выбранное задание. Для этого запускается класс
-        TaskWindow с параметром пути'''
+        '''Функция, запускающая выбранное задание. Для этого запускается
+        объект класса TaskWindow с параметром пути'''
         print('start task with task id', task_id)
         new_window = TaskWindow(path, w, h, self.font_family, task_id, self)
         new_window.exec_()
@@ -345,10 +341,12 @@ class MainWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.page_options)
 
     def refresh_tasks_info(self):
+        '''Функция для обновления виджетов заданий в окне
+        выбора заданий'''
         print('Refresh!')
 
         self.grid_items = []
-        self.download.dowload_patient_files()
+        self.download.download_patient_files()
         self.get_grid_items()
 
         choose_v_cont = QWidget()

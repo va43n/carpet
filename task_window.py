@@ -28,15 +28,16 @@ class TaskWindow(QDialog):
         '''Инициализатор класса, запускает окно с интерфейсом.'''
         super().__init__()
 
-        print("in taskWindow", path, task_id)
-
         # id задания, которое сейчас проходит пациент
         self.task_id = task_id
 
         # Скрываем курсор
         self.setCursor(Qt.BlankCursor)
 
+        # Тип шрифта
         self.font_family = font_family
+
+        # Ссылка на объект главного окна
         self.main_window = main_window
 
         # Если False - значит задание пока и не выполнено, и не
@@ -45,9 +46,10 @@ class TaskWindow(QDialog):
         # закрыто
         self.is_window_closing = False
 
-        # Класс для отправки активности пользователя на сервер
+        # Объект класса для отправки активности пользователя на сервер
         self.task_activity = TaskActivity()
 
+        # Установка размеров окна
         self.w = w
         self.h = h
 
@@ -78,6 +80,7 @@ class TaskWindow(QDialog):
 
         font = QFont(self.font_family, 25)
 
+        # Текст, сообщающий текущий статус калибровки
         self.calibration_label = QLabel('Нажмите левую кнопку мыши, чтобы '
                                         'откалибровать камеру. Нажмите правую '
                                         'кнопку мыши, чтобы прервать '
@@ -89,6 +92,7 @@ class TaskWindow(QDialog):
 
         v_layout.addWidget(self.calibration_label, 1)
 
+        # Текст, в котором находится описание задания
         self.description_label = QLabel('...', self)
 
         self.description_label.setFont(font)
@@ -134,7 +138,7 @@ class TaskWindow(QDialog):
 
         self.show_ex(self.curr_ex)
 
-        # Инициализация класса CameraThread
+        # Объект класса для поиска движущихся объектов
         self.thread = CameraThread(self.w, self.h, self.all_exes)
 
         # Бинд сигналов к функциям класса CameraThread
@@ -216,10 +220,13 @@ class TaskWindow(QDialog):
         Если пользователь нажал ПКМ, значит нужно завершить выполнение
         задания.'''
         if event.button() == Qt.LeftButton:
+            # Если пользователь нажал ЛКМ
             if self.is_window_closing:
                 return
 
             if self.calibrate_state == 0:
+                # Если калибровка только началась
+
                 # Включаем курсор
                 self.unsetCursor()
 
@@ -229,6 +236,8 @@ class TaskWindow(QDialog):
 
                 self.calibration_start_signal.emit(self.calibrate_state)
             else:
+                # Иначе необходимо отправить точку, на которую сейчас
+                # указывает курсор
                 x = int(event.x() * 5 / 4 - self.w * 1 / 5) - 94
                 x = 0 if x <= 0 else x
                 y = int(event.y() * 10 / 9 - self.h * 1 / 10)
@@ -241,6 +250,9 @@ class TaskWindow(QDialog):
 
             self.calibrate_state = (self.calibrate_state + 1) % 5
             if self.calibrate_state == 0:
+                # Если self.calibrate_state == 0, значит все точки были
+                # отправлены, калибровка завершена
+
                 # Скрываем курсор
                 self.setCursor(Qt.BlankCursor)
 
@@ -251,6 +263,8 @@ class TaskWindow(QDialog):
                 self.show_ex(self.curr_ex)
 
         elif event.button() == Qt.RightButton:
+            # Если пользователь нажал ПКМ
+
             if self.is_window_closing:
                 self.accept()
 

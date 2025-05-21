@@ -41,6 +41,7 @@ class CameraThread(QThread):
         основные параметры'''
         super().__init__()
 
+        # Установка размеров окна
         self.w = w
         self.h = h
 
@@ -103,12 +104,14 @@ class CameraThread(QThread):
         # True - если поток активен, иначе False
         self._is_running = True
 
+        # В самом начале важно проверить файл с точками калибровки
         self.check_calibration_info_file()
 
     def run(self):
         '''Функция, запускаемая в отдельном потоке. Обрабатывает каждый
         кадр с камеры'''
         while self._is_running:
+
             # True -  если задача выполнена;
             # False - если задача не выполнена.
             # Позволяет понимать, когда нужно завершить выполнение всех циклов
@@ -161,40 +164,6 @@ class CameraThread(QThread):
             large_contours = [ct for ct in contours if
                               cv2.contourArea(ct) > min_contour_area]
 
-            # Вывод контуров на экран
-            # show = cv2.drawContours(self.frame, large_contours, -1, (0, 255, 0), 2)
-
-            # Вывод калибровочной рамки на экран
-            # show = cv2.line(show,
-            #                 self.rect_ct[0],
-            #                 self.rect_ct[1],
-            #                 (0, 0, 255), 2)
-            # show = cv2.line(show,
-            #                 self.rect_ct[1],
-            #                 self.rect_ct[2],
-            #                 (0, 0, 255), 2)
-            # show = cv2.line(show,
-            #                 self.rect_ct[2],
-            #                 self.rect_ct[3],
-            #                 (0, 0, 255), 2)
-            # show = cv2.line(show,
-            #                 self.rect_ct[3],
-            #                 self.rect_ct[0],
-            #                 (0, 0, 255), 2)
-
-            # Вывод фигур на экран
-            for key in self.new_figures.keys():
-                fig = self.new_figures[key]
-
-                cx, cy = fig[0]
-                a, b = fig[1]
-                theta = radians(fig[2])
-
-                # show = cv2.ellipse(show, (cx, cy), (a, b), theta, 0,
-                #                    360, (255, 0, 255), 2)
-                # show = cv2.ellipse(show, (cx, cy), (0, 0), 0, 0,
-                #                    360, (255, 0, 255), 10)
-
             for ct in large_contours:
                 # Каждый контур превращается в прямоугольник с известными
                 # координатами начала, а также высотой и шириной. Далее
@@ -203,20 +172,14 @@ class CameraThread(QThread):
                 x, y, w, h = cv2.boundingRect(ct)
                 points = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]
 
+                # Создание сетки точек в области контура
                 x_span = list(map(int, np.arange(x, x + w, self.step)))
                 y_span = list(map(int, np.arange(y, y + h, self.step)))
 
-                # Вывод прямоугольника точек на экран
-                # show = cv2.rectangle(show, points[0], points[2], (255, 0, 255), 2)
-
-                # Вывод всех точек на экран
-                # for xi in x_span:
-                #     for yi in y_span:
-                #         show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
-                #                            360, (0, 0, 255), 10)
-
                 for xi in x_span:
                     for yi in y_span:
+                        # В каждой точке в области контура проверяется, попадает ли
+                        # она в одну из фигур текущего задания
                         for key in self.new_figures.keys():
                             fig = self.new_figures[key]
 
@@ -239,10 +202,6 @@ class CameraThread(QThread):
                                 self.ex_completed()
 
                                 is_completed = True
-
-                                # Вывод на экран точки, которая выполнила задание
-                                # show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
-                                #    360, (255, 0, 0), 10)
 
                                 break
                         if is_completed:
@@ -273,6 +232,9 @@ class CameraThread(QThread):
         print('stop in thread')
 
     def check_calibration_info_file(self):
+        '''Функция для проверки файла с точками калибровки. Если в файле
+        есть точки, значит в текущей сессии уже совершалась калибровка,
+        нужно считать эти точки и выполнить калибровку с ними'''
         if os.stat('info/calibration_info.json').st_size == 0:
             return
 
@@ -438,8 +400,6 @@ class CameraThread(QThread):
 
         self.curr_ex += 1
         if self.curr_ex >= self.all_exes_count:
-            # self.cam.stop()
-            # self.cam.close()
             self.send_ex_complited_announce.emit('end')
         else:
             self.set_figures()

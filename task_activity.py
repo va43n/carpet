@@ -3,13 +3,22 @@ from user_info import UserInfo
 
 
 class TaskActivity():
-    chunk_size = 1024
+    '''Класс, используемый для отправки активности пациента на сервер'''
+
+    # URL запроса для обращения к серверу с целью отправки сообщения о начале
+    # выполнения задания
     task_started_url = 'https://tasks-website.vercel.app/api/python/task_started'
+
+    # URL запроса для обращения к серверу с целью отправки сообщения о завершении
+    # выполнения задания
     task_ended_url = 'https://tasks-website.vercel.app/api/python/task_ended'
+
+    # Объект класса с информацией пользователя
     user = UserInfo()
 
     def task_started(self, task_id):
-        print(task_id)
+        '''Функция, отправляющая запрос на сервер о начале выполнения задания'''
+        print('start', task_id)
 
         username = self.user.get_username()
         if username == '':
@@ -33,7 +42,8 @@ class TaskActivity():
                                                   response.text)
 
     def task_ended(self, task_id, result):
-        print(task_id)
+        '''Функция, отправляющая запрос на сервер о завершении выполнения задания'''
+        print('end', task_id)
 
         username = self.user.get_username()
         if username == '':
