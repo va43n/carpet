@@ -121,13 +121,17 @@ class TaskWindow(QDialog):
             data = json.load(f)
             description = data['description']
             self.description_label.setText(f'Описание: {description}')
+
+            num_of_figs = 0
             for ex in data['all_exes']:
                 self.all_exes.append([ex['img'], []])
                 for fig in ex['ex_figs']:
-                    self.all_exes[-1][1].append([fig['name'],
+                    self.all_exes[-1][1].append([fig['name'] + f'_{num_of_figs}',
                                                  [fig['center'],
                                                   fig['radius'],
                                                   fig['angle']]])
+                    num_of_figs += 1
+        print(num_of_figs, self.all_exes)
 
         # Текущий индекс задачи: от 0 до len(self.all_exes) - 1
         self.curr_ex = 0

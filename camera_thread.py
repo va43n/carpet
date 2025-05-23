@@ -139,6 +139,13 @@ class CameraThread(QThread):
                 self.prev_frame = copy.deepcopy(frame_gray)
                 continue
 
+            # Если необходимо пропустить несколько кадров после калибровки
+            # или после выполнения задания:
+            if self.curr_skip >= 0 and self.curr_skip <= self.skip_frames_number:
+                self.curr_skip += 1
+                self.prev_frame = copy.deepcopy(frame_gray)
+                continue
+
             # Получение маски
             diff = cv2.absdiff(frame_gray, self.prev_frame)
             blur = cv2.GaussianBlur(diff, (5, 5), 0)
@@ -146,13 +153,6 @@ class CameraThread(QThread):
             self.prev_frame = copy.deepcopy(frame_gray)
 
             mask_for_ct = mask
-
-            # Если необходимо пропустить несколько кадров после калибровки
-            # или после выполнения задания:
-            if self.curr_skip >= 0 and self.curr_skip <= self.skip_frames_number:
-                self.curr_skip += 1
-                self.prev_frame = copy.deepcopy(frame_gray)
-                continue
 
             # Нахождение контуров
             contours, hierarchy = cv2.findContours(mask_for_ct,
@@ -211,10 +211,6 @@ class CameraThread(QThread):
                 if is_completed:
                     break
 
-            # Вывод на экран изображений
-            # cv2.imshow('test', show)
-            # cv2.moveWindow('test', 1920, 0)
-
         print('leave cycle')
 
     def stop(self):
@@ -223,11 +219,6 @@ class CameraThread(QThread):
         self.cam.close()
 
         self._is_running = False
-
-        # try:
-        #     cv2.destroyWindow('test')
-        # except:
-        #     print('window was not opened')
 
         print('stop in thread')
 

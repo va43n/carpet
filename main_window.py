@@ -28,7 +28,6 @@ class MainWindow(QMainWindow):
 
         # Объект класса для скачивания новых заданий
         self.download = Download()
-        self.download.download_patient_files()
 
         # Установка названия приложения
         self.setWindowTitle('Коврик')
@@ -154,8 +153,8 @@ class MainWindow(QMainWindow):
         choose_button_back.setFont(font)
         hbox_layout.addWidget(choose_button_back)
 
-        choose_scroll_area = QScrollArea()
-        choose_scroll_area.setWidgetResizable(True)
+        self.choose_scroll_area = QScrollArea()
+        self.choose_scroll_area.setWidgetResizable(True)
 
         # Массив виджетов с заданиями
         self.grid_items = []
@@ -164,7 +163,7 @@ class MainWindow(QMainWindow):
         choose_layout = QVBoxLayout()
 
         choose_layout.addWidget(choose_label_title)
-        choose_layout.addWidget(choose_scroll_area)
+        choose_layout.addWidget(self.choose_scroll_area)
         choose_layout.addLayout(hbox_layout)
 
         choose_layout.setStretch(0, 20)
