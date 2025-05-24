@@ -358,13 +358,14 @@ class CameraThread(QThread):
 
         angle = (atan((self.rect_ct[3][1] - self.rect_ct[2][1])
                       / (self.rect_ct[3][0] - self.rect_ct[2][0])) * 180 / pi)
+
         scale1 = self.w / np.linalg.norm(self.rect_ct[0] - self.rect_ct[1])
         scale2 = self.h / np.linalg.norm(self.rect_ct[1] - self.rect_ct[2])
 
         for key in self.new_figures.keys():
             n_fig = self.new_figures[key]
 
-            n_fig[2] = angle
+            n_fig[2] += angle
 
             n_fig[0][0] = n_fig[0][0] / scale1 + self.rect_ct[0][0]
             n_fig[0][1] = n_fig[0][1] / scale2 + self.rect_ct[0][1]
