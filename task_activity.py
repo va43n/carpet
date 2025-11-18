@@ -1,4 +1,5 @@
 import requests
+
 from user_info import UserInfo
 
 
@@ -41,7 +42,7 @@ class TaskActivity():
             print('Cannot start task on server:', response.status_code,
                                                   response.text)
 
-    def task_ended(self, task_id, result):
+    def task_ended(self, task_id, result, all_times=[]):
         '''Функция, отправляющая запрос на сервер о завершении выполнения задания'''
         print('end', task_id)
 
@@ -56,7 +57,8 @@ class TaskActivity():
         response = requests.post(self.task_ended_url, json={'username': username,
                                                             'password': password,
                                                             'task_id': task_id,
-                                                            'result': result})
+                                                            'result': result,
+                                                            'all_times': all_times})
 
         print(response)
 

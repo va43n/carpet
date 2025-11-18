@@ -1,15 +1,17 @@
+import json
+import os
+import shutil
+
 from PyQt5.QtWidgets import (QScrollArea, QWidget, QHBoxLayout,
                              QMainWindow, QStackedWidget,
                              QVBoxLayout, QPushButton, QLabel,
                              QSizePolicy, QGridLayout, QLineEdit)
 from PyQt5.QtGui import QFont, QFontDatabase, QPixmap
 from PyQt5.QtCore import Qt
+
 from task_window import TaskWindow
 from user_info import UserInfo
 from download import Download
-import json
-import os
-import shutil
 
 
 class MainWindow(QMainWindow):

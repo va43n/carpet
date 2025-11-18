@@ -1,11 +1,14 @@
+import json
+import time
+
 import numpy as np
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt5.QtGui import QFont, QPixmap, QImage
 from PyQt5.QtCore import Qt, pyqtSignal
 from PIL import Image
+
 from camera_thread import CameraThread
 from task_activity import TaskActivity
-import json
 
 
 class TaskWindow(QDialog):
@@ -116,6 +119,10 @@ class TaskWindow(QDialog):
         # Массив всех задач задания
         self.all_exes = []
 
+        # Массив времен выполнения каждой задачи
+        self.all_times = []
+        self.curr_time = 0
+
         # Обработка файла, описывающего все задание: task.json
         with open(f'{self.path}/task.json') as f:
             data = json.load(f)
@@ -191,13 +198,20 @@ class TaskWindow(QDialog):
         if input == 'changed':
             self.curr_ex += 1
             self.show_ex(self.curr_ex)
+
+            new_time = time.time()
+            self.all_times.append(new_time - self.curr_time)
+            self.curr_time = new_time
         elif input == 'end':
+            new_time = time.time()
+            self.all_times.append(new_time - self.curr_time)
+
             # Картинка 'Задание выполнено!' появляется на экране
             img_path = f'pics/success.png'
             pixmap = QPixmap(img_path)
             self.img.setPixmap(pixmap)
 
-            self.task_activity.task_ended(self.task_id, 'Success')
+            self.task_activity.task_ended(self.task_id, 'Success', self.all_times)
 
             with open(f'{self.path}/task.json', 'r') as f:
                 data = json.load(f)
@@ -216,7 +230,7 @@ class TaskWindow(QDialog):
         отправляющая на сервер уведомление о том, что выполнение 
         задания началось.'''
         self.task_activity.task_started(self.task_id)
-        pass
+        self.curr_time = time.time()
 
     def mousePressEvent(self, event):
         '''Функция, орабатывающая пользовательский ввод с мыши.

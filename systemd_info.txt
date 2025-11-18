@@ -6,7 +6,6 @@ sudo vi /etc/systemd/system/carpet.service
 Description=Python carpet program
 After=network.target display-manager.service
 Wants=network.target
-Requires=display-manager.service
 
 [Service]
 ExecStart=/usr/bin/python3 /home/login/Desktop/prog/main.py

@@ -1,12 +1,13 @@
+from math import atan, pi, radians, sin, cos
+import copy
+import json
+import os
+
 import numpy as np
 from numpy.linalg import norm
 import cv2
 from picamera2 import Picamera2
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
-from math import atan, pi, radians, sin, cos
-import copy
-import json
-import os
 
 
 class CameraThread(QThread):
@@ -164,6 +165,40 @@ class CameraThread(QThread):
             large_contours = [ct for ct in contours if
                               cv2.contourArea(ct) > min_contour_area]
 
+            # Вывод контуров на экран
+            show = cv2.drawContours(self.frame, large_contours, -1, (0, 255, 0), 2)
+
+            # Вывод калибровочной рамки на экран
+            show = cv2.line(show,
+                            self.rect_ct[0],
+                            self.rect_ct[1],
+                            (0, 0, 255), 2)
+            show = cv2.line(show,
+                            self.rect_ct[1],
+                            self.rect_ct[2],
+                            (0, 0, 255), 2)
+            show = cv2.line(show,
+                            self.rect_ct[2],
+                            self.rect_ct[3],
+                            (0, 0, 255), 2)
+            show = cv2.line(show,
+                            self.rect_ct[3],
+                            self.rect_ct[0],
+                            (0, 0, 255), 2)
+            
+            # Вывод фигур на экран
+            for key in self.new_figures.keys():
+                fig = self.new_figures[key]
+
+                cx, cy = fig[0]
+                a, b = fig[1]
+                theta = radians(fig[2])
+
+                show = cv2.ellipse(show, (cx, cy), (a, b), theta, 0,
+                                   360, (255, 0, 255), 2)
+                show = cv2.ellipse(show, (cx, cy), (0, 0), 0, 0,
+                                   360, (255, 0, 255), 10)
+
             for ct in large_contours:
                 # Каждый контур превращается в прямоугольник с известными
                 # координатами начала, а также высотой и шириной. Далее
@@ -172,12 +207,19 @@ class CameraThread(QThread):
                 x, y, w, h = cv2.boundingRect(ct)
                 points = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]
 
+                # Вывод прямоугольника точек на экран
+                show = cv2.rectangle(show, points[0], points[2], (255, 0, 255), 2)
+
                 # Создание сетки точек в области контура
                 x_span = list(map(int, np.arange(x, x + w, self.step)))
                 y_span = list(map(int, np.arange(y, y + h, self.step)))
 
                 for xi in x_span:
                     for yi in y_span:
+                        # Вывод всех точек на экран
+                        show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
+                                           360, (0, 0, 255), 10)
+
                         # В каждой точке в области контура проверяется, попадает ли
                         # она в одну из фигур текущего задания
                         for key in self.new_figures.keys():
@@ -203,6 +245,10 @@ class CameraThread(QThread):
 
                                 is_completed = True
 
+                                # Вывод на экран точки, которая выполнила задание
+                                show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
+                                   360, (255, 0, 0), 10)
+
                                 break
                         if is_completed:
                             break
@@ -210,6 +256,8 @@ class CameraThread(QThread):
                         break
                 if is_completed:
                     break
+
+            # cv2.imshow('Debug footage', show)
 
         print('leave cycle')
 
