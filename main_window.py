@@ -251,6 +251,7 @@ class MainWindow(QMainWindow):
             # Открытие файла задания и считывание необходимых параметров
             with open(f'db/{name}/task.json', 'r') as task_file:
                 task_data = json.load(task_file)
+                # print(task_data, name)
                 if task_data['username'] != self.user.get_username():
                     continue
 

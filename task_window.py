@@ -121,7 +121,7 @@ class TaskWindow(QDialog):
 
         # Массив времен выполнения каждой задачи
         self.all_times = []
-        self.curr_time = 0
+        self.curr_time = time.time()
 
         # Обработка файла, описывающего все задание: task.json
         with open(f'{self.path}/task.json') as f:
@@ -186,7 +186,7 @@ class TaskWindow(QDialog):
         pixmap = self.turn_array_into_qpixmap(arr)
         self.img.setPixmap(pixmap)
 
-    def ex_changed(self, input):
+    def ex_changed(self, input, user_points = [], figures_for_graph = []):
         '''Функция, вызываемая через сигнал из класса CameraThread,
         принимающее на вход одну из двух строк.
         Если строка - changed, значит задача была выполнена и нужно
@@ -203,6 +203,8 @@ class TaskWindow(QDialog):
             self.all_times.append(new_time - self.curr_time)
             self.curr_time = new_time
         elif input == 'end':
+            self.is_window_closing = True
+            
             new_time = time.time()
             self.all_times.append(new_time - self.curr_time)
 
@@ -211,7 +213,7 @@ class TaskWindow(QDialog):
             pixmap = QPixmap(img_path)
             self.img.setPixmap(pixmap)
 
-            self.task_activity.task_ended(self.task_id, 'Success', self.all_times)
+            self.task_activity.task_ended(self.task_id, 'Success', self.all_times, user_points, figures_for_graph)
 
             with open(f'{self.path}/task.json', 'r') as f:
                 data = json.load(f)
@@ -223,17 +225,16 @@ class TaskWindow(QDialog):
 
             self.thread.stop()
 
-            self.is_window_closing = True
-
     def task_started(self):
         '''Функция, вызываемая через сигнал из класса CameraThread,
         отправляющая на сервер уведомление о том, что выполнение 
         задания началось.'''
         self.task_activity.task_started(self.task_id)
+        print("task_started")
         self.curr_time = time.time()
 
     def mousePressEvent(self, event):
-        '''Функция, орабатывающая пользовательский ввод с мыши.
+        '''Функция, обрабатывающая пользовательский ввод с мыши.
         Если пользователь нажал ЛКМ, значит он калибрует камеру;
         Если пользователь нажал ПКМ, значит нужно завершить выполнение
         задания.'''
@@ -285,6 +286,7 @@ class TaskWindow(QDialog):
 
             if self.is_window_closing:
                 self.accept()
+                return
 
             # Картинка 'Задание не выполнено' появляется на экране
             img_path = 'pics/fail.png'

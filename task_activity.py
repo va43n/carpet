@@ -42,7 +42,7 @@ class TaskActivity():
             print('Cannot start task on server:', response.status_code,
                                                   response.text)
 
-    def task_ended(self, task_id, result, all_times=[]):
+    def task_ended(self, task_id, result, all_times=[], user_points=[], figures_for_graph=[]):
         '''Функция, отправляющая запрос на сервер о завершении выполнения задания'''
         print('end', task_id)
 
@@ -53,12 +53,16 @@ class TaskActivity():
         password = self.user.get_password()
         if password == '':
             return -1
+    
+        print("ALL+_TIMES", all_times, user_points, figures_for_graph)
 
         response = requests.post(self.task_ended_url, json={'username': username,
                                                             'password': password,
                                                             'task_id': task_id,
                                                             'result': result,
-                                                            'all_times': all_times})
+                                                            'all_times': all_times,
+                                                            'user_points': user_points,
+                                                            'figures_for_graph': figures_for_graph})
 
         print(response)
 

@@ -2,6 +2,7 @@ from math import atan, pi, radians, sin, cos
 import copy
 import json
 import os
+import time
 
 import numpy as np
 from numpy.linalg import norm
@@ -28,7 +29,7 @@ class CameraThread(QThread):
     # показать на экране следующую задачу;
     # Если строка - end, значит последняя задача была выполнена,
     # нужно закончить выполнение упражнения.
-    send_ex_complited_announce = pyqtSignal(str)
+    send_ex_complited_announce = pyqtSignal(str, list, list)
 
     # Сигнал, связывающий этот класс с классом TaskWindow, вызывающийся
     # в первый раз, когда происходит калибровка. Как только это
@@ -94,6 +95,7 @@ class CameraThread(QThread):
         self.figures = {}
         self.new_figures = {}
         self.set_figures()
+        self.figures_for_graph = []
 
         # Количество пикселей между точками, на которые разбивается
         # контур движущегося объекта
@@ -104,6 +106,9 @@ class CameraThread(QThread):
 
         # True - если поток активен, иначе False
         self._is_running = True
+
+        self.user_points = [{"x": self.w / 2, "y": 0}]
+        self.last_point = {}
 
         # В самом начале важно проверить файл с точками калибровки
         self.check_calibration_info_file()
@@ -169,35 +174,35 @@ class CameraThread(QThread):
             show = cv2.drawContours(self.frame, large_contours, -1, (0, 255, 0), 2)
 
             # Вывод калибровочной рамки на экран
-            show = cv2.line(show,
-                            self.rect_ct[0],
-                            self.rect_ct[1],
-                            (0, 0, 255), 2)
-            show = cv2.line(show,
-                            self.rect_ct[1],
-                            self.rect_ct[2],
-                            (0, 0, 255), 2)
-            show = cv2.line(show,
-                            self.rect_ct[2],
-                            self.rect_ct[3],
-                            (0, 0, 255), 2)
-            show = cv2.line(show,
-                            self.rect_ct[3],
-                            self.rect_ct[0],
-                            (0, 0, 255), 2)
+            # show = cv2.line(show,
+            #                 self.rect_ct[0],
+            #                 self.rect_ct[1],
+            #                 (0, 0, 255), 2)
+            # show = cv2.line(show,
+            #                 self.rect_ct[1],
+            #                 self.rect_ct[2],
+            #                 (0, 0, 255), 2)
+            # show = cv2.line(show,
+            #                 self.rect_ct[2],
+            #                 self.rect_ct[3],
+            #                 (0, 0, 255), 2)
+            # show = cv2.line(show,
+            #                 self.rect_ct[3],
+            #                 self.rect_ct[0],
+            #                 (0, 0, 255), 2)
             
             # Вывод фигур на экран
-            for key in self.new_figures.keys():
-                fig = self.new_figures[key]
+            # for key in self.new_figures.keys():
+            #     fig = self.new_figures[key]
 
-                cx, cy = fig[0]
-                a, b = fig[1]
-                theta = radians(fig[2])
+            #     cx, cy = fig[0]
+            #     a, b = fig[1]
+            #     theta = radians(fig[2])
 
-                show = cv2.ellipse(show, (cx, cy), (a, b), theta, 0,
-                                   360, (255, 0, 255), 2)
-                show = cv2.ellipse(show, (cx, cy), (0, 0), 0, 0,
-                                   360, (255, 0, 255), 10)
+            #     show = cv2.ellipse(show, (cx, cy), (a, b), theta, 0,
+            #                        360, (255, 0, 255), 2)
+            #     show = cv2.ellipse(show, (cx, cy), (0, 0), 0, 0,
+            #                        360, (255, 0, 255), 10)
 
             for ct in large_contours:
                 # Каждый контур превращается в прямоугольник с известными
@@ -214,8 +219,12 @@ class CameraThread(QThread):
                 x_span = list(map(int, np.arange(x, x + w, self.step)))
                 y_span = list(map(int, np.arange(y, y + h, self.step)))
 
+                central_point = {"x": x + w / 2, "y": y + h / 2}
+
                 for xi in x_span:
                     for yi in y_span:
+                        self.last_point = {"x": xi, "y": yi}
+
                         # Вывод всех точек на экран
                         show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
                                            360, (0, 0, 255), 10)
@@ -239,16 +248,17 @@ class CameraThread(QThread):
                             if eq <= 1:
                                 self.is_changing_ex = True
                                 print(f'Ex {self.curr_ex + 1} completed')
-                                print(f'stand on figures[{key}] ({cx}, {cy}; '
-                                      f'{a}, {b}; {theta}) by point=[{xi}, {yi}] in {points=}')
+                                # print(f'stand on figures[{key}] ({cx}, {cy}; '
+                                #       f'{a}, {b}; {theta}) by point=[{xi}, {yi}] in {points=}')
                                 self.ex_completed()
 
                                 is_completed = True
 
                                 # Вывод на экран точки, которая выполнила задание
-                                show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
-                                   360, (255, 0, 0), 10)
-
+                                # show = cv2.ellipse(show, (xi, yi), (0, 0), 0, 0,
+                                #    360, (255, 0, 0), 10)
+                                self.user_points.append({"x": xi, "y": yi})
+                                print("POINT", {"x": xi, "y": yi})
                                 break
                         if is_completed:
                             break
@@ -256,6 +266,7 @@ class CameraThread(QThread):
                         break
                 if is_completed:
                     break
+                # self.user_points.append(central_point)
 
             # cv2.imshow('Debug footage', show)
 
@@ -279,12 +290,12 @@ class CameraThread(QThread):
 
         with open('info/calibration_info.json', 'r') as file:
             data = json.load(file)
-            print('data =', data)
+            # print('data =', data)
             self.rect_ct[0] = np.array(data['1'])
             self.rect_ct[1] = np.array(data['2'])
             self.rect_ct[2] = np.array(data['3'])
             self.rect_ct[3] = np.array(data['4'])
-            print(f'{self.rect_ct=}')
+            # print(f'{self.rect_ct=}')
 
             self.do_calibration()
 
@@ -292,10 +303,12 @@ class CameraThread(QThread):
         '''Функция, устанавливающая фигуры'''
         self.figures = {}
         if self.curr_ex >= self.all_exes_count:
-            self.send_ex_complited_announce.emit('end')
+            self.user_points.append(self.last_point)
+            self.send_ex_complited_announce.emit('end', self.user_points, self.figures_for_graph)
+            print("WE ARE THERE SOMEHOW")
         for key in self.all_exes[self.curr_ex][1]:
             self.figures[key[0]] = key[1]
-        print(f'{self.figures=}')
+        # print(f'{self.figures=}')
 
     @pyqtSlot(int)
     def start_calibration(self, input):
@@ -423,6 +436,8 @@ class CameraThread(QThread):
             n_fig[0][0] = round(n_fig[0][0])
             n_fig[0][1] = round(n_fig[0][1])
 
+            self.figures_for_graph.append({"cx": n_fig[0][0], "cy": n_fig[0][1], "rx": n_fig[1][0], "ry": n_fig[1][1], "angle": n_fig[2]})
+
         self.curr_skip = 0
 
         if not self.is_calibrated:
@@ -440,11 +455,12 @@ class CameraThread(QThread):
 
         self.curr_ex += 1
         if self.curr_ex >= self.all_exes_count:
-            self.send_ex_complited_announce.emit('end')
+            self.user_points.append(self.last_point)
+            self.send_ex_complited_announce.emit('end', self.user_points, self.figures_for_graph)
         else:
             self.set_figures()
             self.do_calibration()
-            self.send_ex_complited_announce.emit('changed')
+            self.send_ex_complited_announce.emit('changed', [], [])
             self.is_changing_ex = False
 
         self.curr_skip = 0
