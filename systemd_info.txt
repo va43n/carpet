@@ -8,8 +8,8 @@ After=network.target display-manager.service
 Wants=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/login/Desktop/prog/main.py
-WorkingDirectory=/home/login/Desktop/prog/
+ExecStart=/usr/bin/python3 /home/login/Desktop/carpet/main.py
+WorkingDirectory=/home/login/Desktop/carpet/
 StandardOutput=inherit
 StandardError=inherit
 Restart=no
